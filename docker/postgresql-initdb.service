@@ -1,0 +1,11 @@
+[Unit]
+Description=PostgreSQL initdb service
+Before=postgresql.service
+
+[Service]
+Type=oneshot
+
+ExecStart=/usr/libexec/postgresql-initdb.sh
+
+[Install]
+RequiredBy=postgresql.service

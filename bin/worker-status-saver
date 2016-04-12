@@ -1,0 +1,33 @@
+#!/bin/env ruby
+
+require './config/environment.rb'
+
+require 'seapig-client'
+
+
+
+EM.run {
+	
+	SeapigServer.new(ARGV[0],name: 'worker-status-saver').slave('worker-status-*').onchange { |statuses|
+		statuses.each_pair { |worker_object_id, status|
+			p worker_object_id
+			worker = Worker.find_or_create_by(name: worker_object_id.split('-')[2])
+			p status
+			previous_status = worker.status
+			if (not previous_status) or (status['timestamp'] != previous_status.data['timestamp'])
+				WorkerStatus.transaction {
+					if previous_status
+						previous_status.current = false 
+						previous_status.save!
+					end
+					WorkerStatus.create!(worker_id: worker.id, data: status, current: true)
+				}
+			end
+		}
+		WorkerStatus.seapig_dependency_changed
+	}
+
+}
+
+
+
