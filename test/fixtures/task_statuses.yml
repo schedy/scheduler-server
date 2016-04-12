@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  task_id: 1
+  status: MyText
+  current: false
+
+two:
+  task_id: 1
+  status: MyText
+  current: false

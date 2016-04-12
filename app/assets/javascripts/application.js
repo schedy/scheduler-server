@@ -15,3 +15,7 @@
 //= require mithril
 //= require main
 //= require bootstrap
+//= require seapig/seapig-client
+//= require seapig/seapig-router
+//= require json-patch-duplex
+//= require underscore

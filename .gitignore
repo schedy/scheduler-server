@@ -15,3 +15,8 @@
 /log/*
 !/log/.keep
 /tmp
+/vendor/cache
+/public/assets
+/docker/scheduler-server.tar.bz2
+
+

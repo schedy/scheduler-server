@@ -1,6 +1,27 @@
 Rails.application.routes.draw do
 
+
+	resources :task_values, only: [:create]
+
+	resources :artifacts, only: [:create] do
+		member do
+			get ':filename' => 'artifacts#show'
+		end
+	end
+	resources :execution_statuses, only: [:create]
+	resources :executions, only: [:create, :show]
+	resources :task_statuses, only: [:create] 
+
+	get 'a/(*whatever)' => 'application#index',  constraints: { whatever: /.*/ }
 	root 'application#index'
+
+
+	#resources :tasks, only: [] do
+	#	member do
+	#		post 'artifacts' => 'artifacts#create'
+	#	end
+	#end
+
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
