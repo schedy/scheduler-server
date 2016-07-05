@@ -3,7 +3,9 @@
 <head>
   <title>Scheduler</title>
   <%= stylesheet_link_tag    'application', media: 'all' %>
+  <%= stylesheet_link_tag    '/project/project', media: 'all' %>
   <%= javascript_include_tag 'application' %>
+  <%= javascript_include_tag '/project/project' %>
   <%= csrf_meta_tags %>
 </head>
 <body data-session-key='<%= @session.key %>'>

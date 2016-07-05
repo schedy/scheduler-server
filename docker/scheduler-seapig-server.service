@@ -2,9 +2,9 @@
 Description=Scheduler Seapig-Server
 
 [Service]
-ExecStart=/usr/bin/bundle exec seapig-server
+ExecStart=/usr/bin/bundle exec seapig-server info
 Type=notify
-Restart=on-failure
+Restart=always
 
 WorkingDirectory=/opt/schedy/scheduler
 User=schedy

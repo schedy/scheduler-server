@@ -8,10 +8,7 @@ class TaskSingle < Producer
 	def self.produce(object_id)
 		object_id =~ /task-(\d+)/
 		id = $1.to_i
-		version = {
-			Task: Task.seapig_dependency_version,
-			TaskStatus: TaskStatus.seapig_dependency_version
-		}
+		version = SeapigDependency.versions('Task','TaskStatus')
 		task = Task.find(id)
 		data = {
 			id: task.id,

@@ -7,7 +7,7 @@ namespace :build do
 		FileUtils.mkdir_p 'docker/build'
 		FileUtils.rm 'docker/scheduler-server.tar.bz2' if File.exists?('docker/scheduler-server.tar.bz2')
 		Dir.chdir 'docker/build'
-		['app', 'bin', 'config', 'db', 'lib', 'public',	'vendor', 'Gemfile', 'Gemfile.lock', 'LICENSE', 'README.rdoc', 'Rakefile', 'config.ru', 'config.rb'].each { |dir|
+		['app', 'bin', 'config', 'db', 'lib', 'public', 'vendor', 'Gemfile', 'Gemfile.lock', 'LICENSE', 'README.rdoc', 'Rakefile', 'config.ru'].each { |dir|
 			FileUtils.cp_r '../../'+dir, '.'
 		}
 		FileUtils.rm_r 'app/assets'

@@ -2,13 +2,12 @@
 Description=Scheduler Seapig-Notifier
 Requires=scheduler-seapig-server.service
 After=scheduler-seapig-server.service
-Requires=postgresql.service
-After=postgresql.service
 
 [Service]
-ExecStart=/usr/bin/bundle exec seapig-notifier http://127.0.0.1:3001/seapig
+Environment=RAILS_ENV=production
+ExecStart=/usr/bin/bundle exec seapig-notifier http://127.0.0.1:3001/seapig 1
 Type=simple
-Restart=on-failure
+Restart=always
 
 WorkingDirectory=/opt/schedy/scheduler
 User=schedy

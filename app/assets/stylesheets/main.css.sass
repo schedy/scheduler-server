@@ -1,54 +1,122 @@
 td
-  vertical-align: middle !important
+        vertical-align: middle !important
 .task_marker
-  width: 1.2em
-  height: 1.2em            
-  padding: 0.1em 0.5em
-  float: left
-  margin-right: 0.1em  
-  background-color: purple
-.task_marker.task_status_waiting
-  background-color: gray
-.task_marker.task_status_started
-  background-color: yellow
-.task_marker.task_status_finished
-  background-color: limegreen
-.task_marker.task_status_assigned
-  background-color: navy
-.task_marker.task_status_crashed
-  background-color: red
-.task_marker.task_status_failed
-  background-color: orange
-    
-table
-  .id-column
-    width: 40px
-  .creator-column
-    width: 80px
-  .status-column
-    width: 80px
-  .date-column
-    width: 200px
+        width: 1.2em
+        height: 1.2em
+        padding: 0.1em
+        margin: 0.1em
+        float: left
+        background-color: purple
+        transition: background-color 2s ease
+        border: 0.1em solid black
 
-.tag   
-  font-family: Sans-Serif
-  padding-right: 0.2em
-  padding-left: 0.2em      
-  float: left      
+
+.task_marker.task_status_waiting
+        background-color: gray
+.task_marker.task_status_started
+        background-color: skyblue
+        animation: background-pulsate 2s infinite steps(10)
+//        animation: background-phase 1s infinite steps(5)
+//        background: linear-gradient(to right, dodgerblue 0%,dodgerblue 40%, lightblue 50%, dodgerblue 60%, dodgerblue 100%)
+.task_marker.task_status_finished
+        background-color: limegreen
+.task_marker.task_status_assigned
+        background-color: navy
+.task_marker.task_status_crashed
+        background-color: red
+.task_marker.task_status_failed
+        background-color: orange
+.task_marker.task_status_cancelled
+        background-color: darkred
+
+table
+        .id-column
+                width: 50px
+        .creator-column
+                width: 80px
+        .status-column
+                width: 80px
+        .date-column
+                width: 200px
+
+#filters
+        white-space: nowrap
+
+.artifacts-list
+        padding-left: 0.5em
+
+.action-icon
+        cursor: pointer
+
+.tag
+        font-family: "Verdana", Helvetica, sans-serif
+        padding: 0.1e
+        margin: 0.1em
+        float: none
+        display: inline-block
+        vertical-align: middle
+
 
 .key
-  text-transform: capitalize          
-  float: left
-  padding-right: 0.3em
-  padding-left: 0.3em           
-  background-color: lightblue
+        text-transform: capitalize
+        float: left
+        padding-right: 0.3em
+        padding-left: 0.3em
+        background-color: peachpuff
+        border: 1px solid black
 
-.value 
-  float: left
-  padding-right: 0.3em
-  padding-left: 0.3em           
-  background-color: lightgray
 
+.value
+        float: left
+        padding-right: 0.3em
+        padding-left: 0.3em
+        background-color: lightgray
+        border: 1px solid black
+        border-left: 0px
+.artifact
+        color: inherit
 .clear
-  clear: both
-          
+        clear: both
+
+.creator-column
+        display: none
+
+@keyframes background-pulsate
+        0%
+                background-color: #6e80ff
+        50%
+                background-color: blue
+        100%
+                background-color: #6e80ff
+
+@keyframes background-phase
+        0%
+                background-position: 0 0px
+        100%
+                background-position: 15px 0px
+
+.top-padding
+        padding-top: 0.1em
+
+.cn
+        display: flex
+        justify-content: center
+
+.inner
+        align-self: center
+
+.filter-parent
+        text-transform: capitalize
+        font-size: 0.9em
+        font-weight: bold
+
+.filter-header
+        font-variant: small-caps
+        font-weight: bold
+        font-size: 1.1em
+
+#timeline
+        overflow: hidden
+#timeline-container
+        overflow: hidden
+        margin-top: 20px
