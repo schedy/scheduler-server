@@ -2,14 +2,12 @@
 Description=Scheduler Seapig-Worker instance: %i
 Requires=scheduler-seapig-server.service
 After=scheduler-seapig-server.service
-Requires=postgresql.service
-After=postgresql.service
 
 [Service]
 Environment=RAILS_ENV=production
 ExecStart=/usr/bin/bundle exec seapig-worker http://127.0.0.1:3001/seapig
 Type=simple
-Restart=on-failure
+Restart=always
 
 WorkingDirectory=/opt/schedy/scheduler
 User=schedy

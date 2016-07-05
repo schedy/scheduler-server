@@ -4,7 +4,11 @@ class ArtifactsController < ApplicationController
 
 	def create
 		artifact = Artifact.new
-		artifact.task = Task.find(params[:task])
+    if params[:task]
+		  artifact.task = Task.find(params[:task])
+    elsif params[:execution]
+		  artifact.execution = Execution.find(params[:execution])
+    end
 		artifact.mimetype = params[:data].content_type
 		artifact.name = params[:data].original_filename
 		artifact.data = params[:data].tempfile.read

@@ -1,0 +1,78 @@
+#!/bin/env ruby
+
+require 'set'
+require 'seapig-client'
+require 'pp'
+require 'awesome_print'
+
+
+EM.run {
+	seapig_server = SeapigServer.new(ARGV[0], name: "dealer")
+
+  worker_estimates = seapig_server.slave('estimates:*')
+  tasks_waiting = seapig_server.slave('tasks-waiting')
+  assignments = Hash.new { |hash,key| hash[key] = seapig_server.master('assignments:'+key) }
+  redeal = true
+  used_stations = Set.new
+  tasks_waiting.onchange { redeal = true }
+  worker_estimates.onchange { |obj|
+    used_stations = used_stations - [obj.object_id.split(':')[1]]
+    redeal = true
+  }
+
+
+  EM.add_periodic_timer(1) {
+    next if (not redeal) or (not tasks_waiting.valid)
+    tasks_waiting_by_id = Hash[*tasks_waiting["tasks"].map { |task| [task['id'].to_i, task] }.flatten]
+    scores = []
+    worker_estimates.each_pair { |worker, estimates|
+      estimates.each { |task_id,estimate|
+        absolute_priority = if tasks_waiting_by_id[task_id.to_i] then tasks_waiting_by_id[task_id.to_i]['priority'] || 10  end
+
+        scores << [
+          absolute_priority.to_i*(-1),
+          estimate["transition_duration"], #transition duration
+          tasks_waiting_by_id[task_id.to_i]['execution_id'], #execution id
+          estimate["actors"].to_i*(-1), # actor count
+          estimate["execution_duration"].to_i*(-1),#execution duration
+          task_id.to_i,#task_id, needed for specifying task
+          worker.split(':')[1] #worker needed to reach seapig object
+
+        ] if tasks_waiting_by_id[task_id.to_i]
+      }
+    }
+    scores.sort!
+    assigned = Set.new(assignments.values.map { |assignments| assignments.keys }.flatten)
+    assigned_tasks = Set.new
+    scores.each { |abs_prio, estimate, execution_id, actor_count, execution_duration, task_id, worker|
+      next if assigned.include?(task_id)
+      next if used_stations.include?(worker)
+      next if assigned_tasks.include?(task_id)
+      assignments[worker][task_id] = tasks_waiting_by_id[task_id.to_i].merge(assigned_at: Time.new)
+      used_stations << worker
+      assigned_tasks << task_id
+      puts '-'*80
+      puts "Task ID: %8s - Dealed to TS : %8s @ %s"%[task_id,worker,Time.now]
+    }
+
+    assignments.each_pair { |worker, worker_assignments|
+    worker_assignments.each_pair { |id,assignment|
+      worker_assignments.delete(id) if not tasks_waiting['tasks'].find { |task| task['id'].to_s == id.to_s }
+    }
+    worker_assignments.changed
+  }
+  redeal = false
+}
+
+
+EM.add_periodic_timer(1) {
+  assignments.each_pair { |worker, worker_assignments|
+    worker_assignments.each_pair { |id,assignment|
+      next if assignment[:assigned_at] > Time.new - 30
+      puts "Timeout on "+assignment.inspect+" - requeuing"
+      worker_assignments.delete(id)
+      redeal = true
+    }
+  }
+}
+}

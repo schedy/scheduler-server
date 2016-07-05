@@ -8,7 +8,7 @@ class TaskStatusesController < ApplicationController
 			task.status.update(current: false)
 			TaskStatus.create!(task_id: task.id, current: true, status: params[:status])
 			task.execution.update_status
-			TaskStatus.seapig_dependency_changed
+			SeapigDependency.bump('TaskStatus')
 			render json: task
 		}
 	end

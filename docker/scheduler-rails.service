@@ -1,12 +1,13 @@
 [Unit]
 Description=Scheduler Ruby on Rails Webapp
-Requires=postgresql.service
-After=postgresql.service
+Requires=scheduler-init.service
+After=scheduler-init.service
 
 [Service]
 Environment=RAILS_ENV=production
 Environment=RAILS_SERVE_STATIC_FILES=true
-EnvironmentFile = /etc/scheduler/secret.env
+EnvironmentFile=/etc/scheduler/secret.env
+
 ExecStart=/usr/bin/bundle exec rails s -b 0.0.0.0
 Type=simple
 
