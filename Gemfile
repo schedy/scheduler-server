@@ -48,19 +48,9 @@ group :development do
   gem 'spring'
 end
 
-
 gem 'seapig-client'
 gem 'seapig-rails'
 gem 'seapig-server'
 
-
 gem 'pg'
-
-group :celery do
-	gem 'rcelery', git: "https://github.com/leapfrogonline/rcelery.git"
-end
-
-
 gem 'awesome_print'
-gem 'rest-client'
-gem 'amqp'

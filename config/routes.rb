@@ -1,16 +1,33 @@
 Rails.application.routes.draw do
 
 
-	resources :task_values, only: [:create]
-
 	resources :artifacts, only: [:create] do
 		member do
 			get ':filename' => 'artifacts#show'
 		end
 	end
+
+	resources :workers, only: [] do
+		member do
+			post 'status' => 'worker_statuses#create'
+		end
+	end
+
+	resources :resources, only: [] do
+		member do
+			post 'status' => 'worker_statuses#create'
+		end
+	end
+
+
+  get '/executions/duplicate' => 'executions#duplicate'
+  get '/executions/force_status' => 'executions#force_status'
+	resources :executions
+
 	resources :execution_statuses, only: [:create]
-	resources :executions, only: [:create, :show]
-	resources :task_statuses, only: [:create] 
+	resources :task_statuses, only: [:create]
+	resources :task_values, only: [:create]
+	resources :resource_statuses, only: [:create]
 
 	get 'a/(*whatever)' => 'application#index',  constraints: { whatever: /.*/ }
 	root 'application#index'

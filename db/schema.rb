@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160315142010) do
+ActiveRecord::Schema.define(version: 20160429081706) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,8 +21,17 @@ ActiveRecord::Schema.define(version: 20160315142010) do
     t.text     "name"
     t.text     "mimetype"
     t.binary   "data"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.integer  "execution_id"
+  end
+
+  create_table "execution_hooks", force: :cascade do |t|
+    t.integer  "execution_id"
+    t.text     "status"
+    t.text     "hook"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "execution_statuses", force: :cascade do |t|
@@ -45,6 +54,7 @@ ActiveRecord::Schema.define(version: 20160315142010) do
     t.integer  "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb    "data"
   end
 
   create_table "properties", force: :cascade do |t|
@@ -52,6 +62,33 @@ ActiveRecord::Schema.define(version: 20160315142010) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  create_table "resource_statuses", force: :cascade do |t|
+    t.integer  "task_id"
+    t.jsonb    "description"
+    t.integer  "resource_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.boolean  "current"
+  end
+
+  create_table "resources", force: :cascade do |t|
+    t.integer  "worker_id"
+    t.integer  "remote_id"
+    t.text     "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "seapig_dependencies", force: :cascade do |t|
+    t.text     "name"
+    t.integer  "current_version",  limit: 8
+    t.integer  "reported_version", limit: 8
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+  end
+
+  add_index "seapig_dependencies", ["name", "current_version"], name: "seapig_dependencies_name_current_version_idx", using: :btree
 
   create_table "seapig_router_session_states", force: :cascade do |t|
     t.integer  "seapig_router_session_id"

@@ -17,5 +17,9 @@
 //= require bootstrap
 //= require seapig/seapig-client
 //= require seapig/seapig-router
+//= require seapig/seapig-binding
 //= require json-patch-duplex
 //= require underscore
+//= require sortable.min.js
+//= require d3.min.js
+//= require timeline-chart.js
