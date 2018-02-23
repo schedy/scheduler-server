@@ -1,39 +1,81 @@
+html
+        overflow-y: scroll
+
 td
-        vertical-align: middle !important
+        vertical-align: middle
+
 .task_marker
-        width: 1.2em
-        height: 1.2em
-        padding: 0.1em
-        margin: 0.1em
+        width: 10px
+        height: 10px
+        padding: 0px
+        margin: 0px
         float: left
         background-color: purple
         transition: background-color 2s ease
-        border: 0.1em solid black
+        border: 0px solid black
+        box-shadow: 1px 0 0 0 #000, 0 1px 0 0 #000, 1px 1px 0 0 #000, 1px 0 0 0 #000 inset, 0 1px 0 0 #000 inset
 
 
-.task_marker.task_status_waiting
-        background-color: gray
-.task_marker.task_status_started
-        background-color: skyblue
-        animation: background-pulsate 2s infinite steps(10)
-//        animation: background-phase 1s infinite steps(5)
-//        background: linear-gradient(to right, dodgerblue 0%,dodgerblue 40%, lightblue 50%, dodgerblue 60%, dodgerblue 100%)
-.task_marker.task_status_finished
-        background-color: limegreen
-.task_marker.task_status_assigned
-        background-color: navy
-.task_marker.task_status_crashed
-        background-color: red
-.task_marker.task_status_failed
-        background-color: orange
-.task_marker.task_status_cancelled
-        background-color: darkred
+.task_status_waiting
+        background-color: rgba(160, 160, 160, 1)
+        &.light-background
+                background-color: rgba(160, 160, 160, 0.1)
+.task_status_assigned
+        background-color: rgba(92, 172, 186, 1)
+        &.light-background
+                background-color: rgba(92, 172, 186, 0.1)
+.task_status_accepted
+        background-color: rgba(61, 142, 186, 1)
+        &.light-background
+                background-color: rgba(61, 142, 186, 0.1)
+.task_status_transition
+        background-color: rgba(30, 110, 180, 1)
+        &.light-background
+                background-color: rgba(30, 110, 180, 0.1)
+.task_status_started
+        background-color: rgba(0, 80, 176, 1)
+        &.light-background
+                background-color: rgba(0, 80, 176, 0.1)
+.task_status_finished
+        background-color: rgba(62, 144, 62, 1)
+        &.light-background
+                background-color: rgba(62, 144, 62, 0.1)
+.task_status_crashed
+        background-color: rgba(220, 50, 50, 1)
+        &.light-background
+                background-color: rgba(220, 50, 50, 0.1)
+.task_status_failed
+        background-color: rgba(200, 114, 0, 1)
+        &.light-background
+                background-color: rgba(200, 114, 0, 0.1)
+.task_status_timeout
+        background-color: rgba(200, 154, 0, 1)
+        &.light-background
+                background-color: rgba(200, 154, 0, 0.1)
+.task_status_cancelled
+        background-color: rgba(144, 144, 62, 1)
+        &.light-background
+                background-color: rgba(144, 144, 62, 0.1)
+.task_status_paused
+        background-color: rgba(118, 73, 84, 1)
+        &.light-background
+                background-color: rgba(118, 73, 84, 0.1)
+
+.gradient
+        background-image: linear-gradient(90deg, rgba(255, 255, 255, 0), white)
+
+
+.id-column, .status-column, .worker-column, .date-column
+        width: 0px
+
+.task_marker
+        &.task_status_accepted, &.task_status_transition, &.task_status_started
+                animation: background-pulsate 2s infinite steps(10)
+
 
 table
         .id-column
                 width: 50px
-        .creator-column
-                width: 80px
         .status-column
                 width: 80px
         .date-column
@@ -42,37 +84,70 @@ table
 #filters
         white-space: nowrap
 
+.filter-selected
+        font-weight: bold
+        color: green
+
 .artifacts-list
         padding-left: 0.5em
 
 .action-icon
         cursor: pointer
 
+.resource
+        padding-left: 0.3em
+        padding-right: 0.3em
+        margin: 0.1em
+        display: inline-block
+        vertical-align: middle
+        border: 1px solid black
+
+.date-column .resource
+        background-color: lightgray
+
+
 .tag
         font-family: "Verdana", Helvetica, sans-serif
         padding: 0.1e
         margin: 0.1em
-        float: none
-        display: inline-block
+        display: inline-flex
         vertical-align: middle
 
+.tasks-filter-attribute
+        width: 1%
+        //vertical-align: middle
+
+.task-filter-value-expand-link
+        padding-left: 3px
 
 .key
         text-transform: capitalize
-        float: left
         padding-right: 0.3em
         padding-left: 0.3em
         background-color: peachpuff
         border: 1px solid black
 
+.key-checkbox
+        padding-right: 0.3em
+        padding-left: 0.3em
+        border: 1px solid black
+        width: 22px
+//        display: inline
+
+.undecorated-links
+        text-decoration: none !important
+        color: rgb(51,51,51)
 
 .value
-        float: left
         padding-right: 0.3em
         padding-left: 0.3em
         background-color: lightgray
         border: 1px solid black
         border-left: 0px
+
+.value.task-tag-value-NOT_SET
+        background-color: white
+
 .artifact
         color: inherit
 .clear
@@ -95,12 +170,21 @@ table
         100%
                 background-position: 15px 0px
 
+.progress
+        margin-bottom: 0px
+        border: 1px solid rgba(0, 0, 0, 1)
+        border-radius: 0px
+        .task_status_accepted, .task_status_transition, .task_status_started
+                animation: progress-bar-stripes 2s linear infinite
+
+.progress.no-top-border
+        border-top: 0px
+
+.progress-bar
+        transition: none
+
 .top-padding
         padding-top: 0.1em
-
-.cn
-        display: flex
-        justify-content: center
 
 .inner
         align-self: center
@@ -115,8 +199,43 @@ table
         font-weight: bold
         font-size: 1.1em
 
+.input-group input.filter-search-input
+        margin-top: 7px
+        margin-bottom: 7px
+
+
+#timeline .linex
+        stroke: black
+        fill: black
+
 #timeline
-        overflow: hidden
-#timeline-container
-        overflow: hidden
-        margin-top: 20px
+        rect
+                stroke: black
+                stroke-width: 1px
+        #upper-mask
+                fill: white
+                stroke-width: 0
+        #lower-mask
+                fill: none
+                stroke-width: 0
+                pointer-events: all
+        .rowline
+                stroke: rgba(0,0,0,0.2)
+                stroke-width: 1px
+
+#timeline-tooltip
+        width: 160px
+        height: 55px
+        background-color: rgba(255,255,200,1)
+        padding: 5px
+        border: 1px black solid
+        display: none
+
+.worker-dead
+        background-color: red
+
+.dygraph-ylabel
+        font-weight: bold
+
+.dygraph-xlabel
+        font-weight: bold

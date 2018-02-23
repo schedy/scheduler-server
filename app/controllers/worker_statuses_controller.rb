@@ -7,7 +7,7 @@ class WorkerStatusesController < ApplicationController
 			worker = Worker.find(params[:id])
 			worker.status.update(current: false)
 			WorkerStatus.create!(worker_id: worker.id, current: true, data: params[:status])
-			SeapigDependency.bump('WorkerStatus')
+			SeapigDependency.bump('Worker')
 			render json: worker
 		}
 	end

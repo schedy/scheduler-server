@@ -1,4 +1,6 @@
 class ResourceStatus < ActiveRecord::Base
-  belongs_to :resource
+
+	belongs_to :resource
+	belongs_to :task
 
 end
