@@ -1,0 +1,51 @@
+@attributes = JSON.parse('<%= JSON.dump(attributes) %>')
+
+Filters = {
+	view: (vnode)=>
+		m '.tags',
+			for attribute in @attributes
+				m 'dl.dl-horizontal.attribute',
+					m 'dt.attribute-name', attribute.name
+					m 'dd.values',
+						for value in attribute.values
+							m 'label.checkbox-inline.checkbox-group', class: value.class,
+								m 'input', "type": "checkbox", "data-attribute": attribute.name, "data-class": value.class
+								m 'span.value-name', value.name
+								if value.count?
+									m 'span.value-count', " ("+value.count+")" }
+
+
+
+apply_filter = =>
+	filter = ""
+	for checkbox in $('.checkbox-group input') when not $(checkbox).prop("checked")
+		if $(checkbox).attr("data-attribute") == "column"
+			filter += "table ."+$(checkbox).attr("data-class")+" { line-height: 0px !important; overflow: hidden; background-color: red; }\n"
+			filter += "table ."+$(checkbox).attr("data-class")+" td { line-height: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important; border: 0px !important; overflow: hidden; background-color: green; }\n"
+		else
+			filter += "table ."+$(checkbox).attr("data-class")+" { display: none; background-color: red; }\n"
+	$('#filter-style').html(filter)
+
+
+update_counts = =>
+	for attribute in @attributes when attribute.name != "column"
+		for value in attribute.values
+			value.count = 0
+			value.count++ for line in $(".line") when $(line).hasClass(value.class)
+
+
+update_filter = =>
+	apply_filter()
+	update_counts()
+	m.render($("#filter")[0], m(Filters))
+
+
+$(document).ready =>
+	update_filter()
+	$(".checkbox-group input").prop("checked", true)
+	$('.checkbox-group input[data-class="tag-loglevel-debug"]').prop("checked", false)
+	#$('.checkbox-group input[data-class="tag-source-missing"]').prop("checked", false)
+	$('.checkbox-group input[data-class="column-process"]').prop("checked", false)
+	$('.checkbox-group input[data-class="column-file"]').prop("checked", false)
+	$("body").on("change",".checkbox-group input", (event)-> update_filter())
+	update_filter()
