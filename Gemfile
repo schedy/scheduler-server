@@ -1,8 +1,7 @@
 source 'https://rubygems.org'
 
-
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.2.4'
+gem 'rails', '5.0.6'
 # Use sqlite3 as the database for Active Record
 #gem 'sqlite3'
 # Use SCSS for stylesheets
@@ -43,14 +42,24 @@ end
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
   gem 'web-console', '~> 2.0'
+  gem 'foreman'
 
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
 end
 
-gem 'seapig-client'
-gem 'seapig-rails'
+gem 'seapig-client-ruby'
 gem 'seapig-server'
+gem 'seapig-postgresql-notifier'
+gem 'seapig-router'
 
-gem 'pg'
+gem 'pg', '~> 0.18'
 gem 'awesome_print'
+gem 'rest-client'
+gem 'hashie'
+gem 'typhoeus'
+gem 'daemons'
+
+gem 'puma'
+
+gem 'railroady'

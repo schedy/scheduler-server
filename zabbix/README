@@ -1,0 +1,58 @@
+scheduler.conf:
+-> /etc/zabbix/zabbix_agentd.d
+
+scheduler.sh
+-> /etc/zabbix/scripts/scheduler
+
+zbx_scheduler_screen.xml
+-> Import to screens
+
+zbx_scheduler_template.xml
+-> Import to templates
+
+
+CREATE OR REPLACE FUNCTION update_stats_counter()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+ IF NEW.current = True THEN
+  INSERT INTO stats_counter (status_table,status_name,status_counter) VALUES (TG_TABLE_NAME,NEW.status, 1) ON CONFLICT (status_table,status_name) DO UPDATE SET status_counter = stats_counter.status_counter + 1;
+ ELSE
+  INSERT INTO stats_counter (status_table,status_name,status_counter) VALUES (TG_TABLE_NAME,NEW.status, 0) ON CONFLICT (status_table,status_name) DO UPDATE SET status_counter = stats_counter.status_counter - 1;
+ END IF;
+
+ RETURN NEW;
+END;
+$BODY$
+LANGUAGE PLPGSQL;
+
+DROP TABLE IF EXISTS stats_counter;
+CREATE TABLE stats_counter (
+   status_table varchar NOT NULL,
+   status_name varchar NOT NULL,
+   status_counter integer NOT NULL
+);
+
+
+ALTER TABLE ONLY stats_counter ADD CONSTRAINT status_name_pkey PRIMARY KEY (status_table,status_name);
+
+INSERT INTO stats_counter
+    SELECT 'task_statuses' AS status_table, status AS status_name, count(*) AS status_counter FROM task_statuses WHERE current = true GROUP BY status;
+
+INSERT INTO stats_counter
+    SELECT 'execution_statuses' AS status_table, status AS status_name, count(*) AS status_counter FROM execution_statuses WHERE current = true GROUP BY status;
+
+
+DROP TRIGGER IF EXISTS trigger_update_stats_counter_on_task_statuses on task_statuses;
+CREATE TRIGGER trigger_update_stats_counter_on_task_statuses AFTER UPDATE or INSERT
+   ON task_statuses
+   FOR EACH ROW
+   EXECUTE PROCEDURE update_stats_counter();
+
+DROP TRIGGER IF EXISTS trigger_update_stats_counter_on_execution_statuses ON execution_statuses;
+CREATE TRIGGER trigger_update_stats_counter_on_execution_statuses AFTER UPDATE or INSERT
+   ON execution_statuses
+   FOR EACH ROW
+   EXECUTE PROCEDURE update_stats_counter();
+
+grant SELECT on stats_counter to zabbix;

@@ -1,0 +1,9 @@
+scheduler-dealer.service
+scheduler-init.sh
+scheduler-rails.service
+scheduler-seapig-rails-notifier.service
+scheduler-seapig-rails-session-saver.service
+scheduler-seapig-server.service
+scheduler-seapig-worker@.service
+scheduler-status-saver.service
+scheduler.logrotate

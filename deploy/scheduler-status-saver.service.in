@@ -1,0 +1,21 @@
+[Unit]
+Description=Scheduler (Worker) Status Saver
+Requires=scheduler-seapig-server.service
+After=scheduler-seapig-server.service
+
+[Service]
+Environment=RAILS_ENV=production
+ExecStart=/usr/bin/bundle exec ruby bin/worker-status-saver http://127.0.0.1:3001/seapig
+Type=simple
+Restart=always
+
+WorkingDirectory=@INSTALL_DIR@
+User=schedy
+Group=schedy
+
+StartLimitInterval=10s
+StartLimitBurst=25
+RestartSec=500ms
+
+[Install]
+WantedBy=multi-user.target

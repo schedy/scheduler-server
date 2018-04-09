@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title><%= ARGV[1] %></title>
+    <style><%= style %></style>
+    <style><%= text("lib/annotator/vendor/bootstrap.min.css") %></style>
+    <style id='filter-style'></style>
+    <script>
+      <%= text("lib/annotator/vendor/mithril.min.js") %>
+      <%= text("lib/annotator/vendor/zepto.min.js") %>
+      <%= script %>
+    </script>
+
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="panel panel-default">
+        <div id="data" class="panel-heading"><strong><%= ARGV[1] %></strong></div>
+        <div id="filter" class="panel-body"></div>
+        <%= data %>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,8 +1,6 @@
-scheduler-web: rails s
-dealer: cd lib;ruby dealer.rb;
-celery-daemon: bundle exec rceleryd -t ./lib/celery/server.rb -a dister
-interpreter: bundle exec ruby ./lib/celery/interpreter-daemon.rb -t ./lib/celery/interpreter.rb
-worker-seapig: bundle exec seapig-worker ws://localhost:3001
-server-seapig: bundle exec seapig-server
-session-saver-seapig: bundle exec seapig-session-saver ws://localhost:3001
-notifier-seapig: bundle exec seapig-notifier ws://localhost:3001
+scheduler-web: rails s -p 3000
+server-seapig: bundle exec seapig-server -v 
+dealer: cd bin; bundle exec ruby bin/dealer ws://127.0.0.1:3001 http://127.0.0.1:81
+worker-seapig: bundle exec seapig-worker -c ws://127.0.0.1:3001
+session-manager-seapig: bundle exec seapig-router-session-manager -c ws://127.0.0.1:3001
+notifier-seapig: bundle exec seapig-postgresql-notifier

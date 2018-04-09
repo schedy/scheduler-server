@@ -1,0 +1,23 @@
+[Unit]
+Description=Scheduler Ruby on Rails Webapp
+Requires=scheduler-init.service
+After=scheduler-init.service
+
+[Service]
+Environment=RAILS_ENV=production
+Environment=RAILS_SERVE_STATIC_FILES=true
+EnvironmentFile=/etc/scheduler/secret.env
+
+ExecStart=/usr/bin/bundle exec puma -p 3000 -b tcp://0.0.0.0 -w 8 -t 1
+Type=simple
+
+WorkingDirectory=@INSTALL_DIR@
+User=schedy
+Group=schedy
+
+StartLimitInterval=10s
+StartLimitBurst=25
+RestartSec=500ms
+
+[Install]
+WantedBy=multi-user.target

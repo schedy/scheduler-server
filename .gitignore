@@ -7,6 +7,8 @@
 # Ignore bundler config.
 /.bundle
 
+config/database.yml
+
 # Ignore the default SQLite database.
 /db/*.sqlite3
 /db/*.sqlite3-journal
@@ -16,8 +18,8 @@
 !/log/.keep
 /tmp
 /vendor/cache
+/vendor/bundle
 /public/assets
-/docker/scheduler-server.tar.bz2
+/deploy/scheduler-server.tar.bz2
 /project
-
-
+/storage

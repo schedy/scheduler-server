@@ -1,0 +1,14 @@
+@INSTALL_DIR@/log/production.log {
+    missingok
+    copytruncate
+    rotate 5
+    size 512M
+    compress
+}
+
+@INSTALL_DIR@/log/*.rb.log {
+    missingok
+    rotate 5
+    size 100M
+    compress
+}
