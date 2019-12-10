@@ -2,8 +2,7 @@ require 'shellwords'
 
 class ExecutionsController < ApplicationController
 
-	skip_before_filter :verify_authenticity_token, only: [:create]
-
+	skip_before_filter :verify_authenticity_token
 
 	def create
 		execution_description = nil
@@ -33,7 +32,7 @@ class ExecutionsController < ApplicationController
 
 	def show
 		execution = Execution.find(params[:id])
-		summary = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
+		summary = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags","task_tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
 		respond_to { |format|
 			format.json { render json: summary }
 		}

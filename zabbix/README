@@ -10,14 +10,13 @@ zbx_scheduler_screen.xml
 zbx_scheduler_template.xml
 -> Import to templates
 
-
 CREATE OR REPLACE FUNCTION update_stats_counter()
   RETURNS trigger AS
 $BODY$
 BEGIN
- IF NEW.current = True THEN
+ IF (TG_OP = 'INSERT') AND NEW.current IS TRUE THEN
   INSERT INTO stats_counter (status_table,status_name,status_counter) VALUES (TG_TABLE_NAME,NEW.status, 1) ON CONFLICT (status_table,status_name) DO UPDATE SET status_counter = stats_counter.status_counter + 1;
- ELSE
+ ELSIF NEW.current IS NOT TRUE AND OLD.current IS TRUE THEN
   INSERT INTO stats_counter (status_table,status_name,status_counter) VALUES (TG_TABLE_NAME,NEW.status, 0) ON CONFLICT (status_table,status_name) DO UPDATE SET status_counter = stats_counter.status_counter - 1;
  END IF;
 
@@ -56,3 +55,4 @@ CREATE TRIGGER trigger_update_stats_counter_on_execution_statuses AFTER UPDATE o
    EXECUTE PROCEDURE update_stats_counter();
 
 grant SELECT on stats_counter to zabbix;
+

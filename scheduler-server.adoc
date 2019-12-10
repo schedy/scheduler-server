@@ -1,0 +1,754 @@
+= Scheduler Server
+:toc:
+
+:sectnums:
+
+== Setup
+
+=== CentOS7
+* Based on a CentOS7 minimal installation.
+* +/data/+ should have a lot of space
+* +/var/lib/machines/+ should have enough space for the container
+
+Add EPEL
+
+----
+# on host
+# check https://fedoraproject.org/wiki/EPEL/FAQ#Using_EPEL for current Download link
+curl -L https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -o epel-release-latest-7.noarch.rpm
+yum localinstall -y epel-release-latest-7.noarch.rpm
+yum install -y nginx dnf policycoreutils-python etckeeper
+----
+
+Initialize +etckeeper+
+
+----
+# on host
+etckeeper init
+cd /etc
+git status
+git commit -m 'msg'
+----
+
+Nginx configuration
+
+----
+# on host
+cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
+vi /etc/nginx/nginx.conf
+diff /etc/nginx/nginx.conf /etc/nginx/nginx.conf.orig
+47,49d46
+<         #location / {
+<         #}
+<
+51,67d47
+<             proxy_pass http://127.0.0.1:3000;
+<             proxy_pass_header Server;
+<             proxy_set_header X-Real-IP $remote_addr;
+<             proxy_set_header X-Forwarded-For $remote_addr;
+<             proxy_set_header Host $host;
+<             proxy_http_version 1.1;
+<         }
+<
+<         location /seapig {
+<             proxy_pass http://127.0.0.1:3001;
+<             proxy_http_version 1.1;
+<             proxy_set_header Upgrade $http_upgrade;
+<             proxy_set_header Connection "upgrade";
+<             proxy_pass_header Server;
+<             proxy_set_header X-Real-IP $remote_addr;
+<             proxy_set_header X-Forwarded-For $remote_addr;
+<             proxy_set_header Host $host;
+----
+
+Allow +nginx+ to work as proxy
+
+----
+# on host
+semanage boolean --modify --on httpd_can_network_connect
+----
+
+Enable and start +nginx+
+
+----
+# on host
+systemctl enable nginx.service
+systemctl start nginx.service
+----
+
+Add Fedora repositories to build the container
+
+----
+# on host
+# todo: make it work with gpgcheck = 1
+# need to import fedora keys, get from where?
+
+cat<<EOF > /etc/yum.repos.d/fedora.repo
+[fedora]
+name=Fedora \$releasever - \$basearch
+failovermethod=priority
+metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-\$releasever&arch=\$basearch
+enabled=0
+metadata_expire=14d
+gpgcheck=0
+skip_if_unavailable=False
+
+[fedora-updates]
+name=Fedora \$releasever - \$basearch - Updates
+failovermethod=priority
+metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-f\$releasever&arch=\$basearch
+enabled=0
+gpgcheck=0
+metadata_expire=6h
+skip_if_unavailable=False
+EOF
+----
+
+Build the container
+
+----
+# on host
+dnf --releasever=26 \
+    --installroot=/var/lib/machines/f26_scheduler_server \
+    --disablerepo='*' \
+    --enablerepo=fedora \
+    --enablerepo=fedora-updates \
+    install systemd passwd dnf fedora-release vim-minimal
+----
+
+Create a .service file for the +systemd-nspawn+ container
+
+----
+# on host
+cat<<EOF > /etc/systemd/system/f26_scheduler_server.service[Unit]
+Description=Container F26 Scheduler Server
+Documentation=man:systemd-nspawn(1)
+PartOf=machines.target
+Before=machines.target
+
+[Service]
+ExecStart=/usr/bin/systemd-nspawn --bind=/data/scheduler-server-data/:/data/ \
+--quiet --boot -D /var/lib/machines/f26_scheduler_server
+KillMode=mixed
+Type=notify
+RestartForceExitStatus=133
+SuccessExitStatus=133
+Slice=machine.slice
+Delegate=yes
+
+[Install]
+WantedBy=machines.target
+EOF
+----
+
+Create needed folder
+
+----
+# on host
+mkdir -p /data/scheduler-server-data/
+----
+
+Start the container
+
+----
+# on host
+systemctl daemon-reload
+systemctl start f26_scheduler_server.service
+----
+
+Enter into the container
+
+----
+# on host
+nsenter -m -u -i -n -p -t $(machinectl status f26_scheduler_server \
+        | grep Leader | awk '{print $2}') /bin/bash -i -l
+----
+
+Get some useful bash prompt
+
+----
+# on host
+cp /etc/skel/.bash* /root/
+exit
+nsenter -m -u -i -n -p -t $(machinectl status f26_scheduler_server \
+        | grep Leader | awk '{print $2}') /bin/bash -i -l
+----
+
+Install dependencies
+
+----
+# inside container
+export REPO_PROXY='--setopt=proxy=http://proxy:8080'
+dnf -y ${REPO_PROXY} makecache
+dnf -y ${REPO_PROXY} install 'dnf-command(config-manager)'
+dnf config-manager ${REPO_PROXY} $(for REPO in $(dnf repolist -v \
+    | grep Repo-id | awk '{print $3}'); do echo -n "$REPO "; done) --save
+
+dnf -y install postgresql-devel postgresql-server rubygem-bundler ruby-devel \
+redhat-rpm-config libxml2-devel libxslt-devel postgresql-devel bzip2 \
+procps-ng net-tools bash-completion nodejs hostname cpio python2 pg_top lz4 \
+postgresql-contrib less rsync openssh-clients openssh-server
+
+dnf -y group install "C Development Tools and Libraries"
+----
+
+Create user +schedy+
+
+----
+# inside container
+groupadd --gid 345 schedy
+useradd --create-home --home-dir /opt/scheduler/schedy --uid 345 \
+        --gid 345 schedy
+----
+
+Get the folder +deploy+ from scheduler-server git repository
+
+----
+# from other host
+cd GIT-SCHEDY-SERVER-REPO
+scp -r deploy schedy:/data/scheduler-server-data/
+----
+
+Inside the container install the needed files for Scheduler
+
+----
+# inside container
+cd /data/deploy/
+./install-files.sh
+----
+
+Set as target location +/opt/scheduler/latest/+
+
+Add more +scheduler-seapig-workers+ the install script just add 4
+
+----
+# inside container
+for I in $(seq --format '%03g'  5 16); do echo $I;systemctl enable \
+    scheduler-seapig-worker@proc-${I}.service  ;done
+----
+
+Configure postgres, for barman backup and stats collection
+
+----
+# inside container
+cd /data/deploy/
+mkdir /etc/systemd/system/postgresql.service.d/
+cp 30-postgres-setup.conf /etc/systemd/system/postgresql.service.d/
+systemctl daemon-reload
+./postgresql-initdb.sh
+
+
+cd /data/postgresql/data
+cp postgresql.conf postgresql.conf.backup
+vi postgresql.conf
+
+diff postgresql.conf postgresql.conf.backup
+
+59d58
+< listen_addresses = '*'
+146d144
+< shared_preload_libraries = 'pg_stat_statements'
+179d176
+< wal_level = 'hot_standby'
+235d231
+< max_wal_senders = 2
+241d236
+< max_replication_slots = 2
+----
+
+Install +ess+ and +exx+ scripts from +scheduler-demo-project/scripts+ git repository to
++/usr/bin/local/+ folder. Ensure they are executable. In case the install path
+of the +systemd-nspawn+ container changed, then also the container name
+changed. Adapt the scripts accordingly!
+
+----
+# from other host
+scp path/to/exx path/to/ess schedy:/usr/local/bin/
+# on host
+chmod 755 /usr/local/bin/ess /usr/local/bin/exx
+----
+
+Deploy with +schedy-server-deploy-script.sh+ from +scheduler-demo-project+ git
+repository see xref:anchor-001[below] how to use the script
+
+----
+# from other host
+./scripts/schedy-server-deploy-script.sh --repo-folder "$HOME/DEVEL/" \
+  --deploy-host schedy
+----
+
+Some one time configuration for Scheduler-Server
+
+----
+# inside container
+mkdir /etc/scheduler/
+cd /opt/scheduler/latest
+echo "SECRET_KEY_BASE=$(bundle exec rake secret)" > /etc/scheduler/secret.env
+chmod 600 /etc/scheduler/secret.env
+chown schedy.schedy /etc/scheduler/secret.env
+
+cd /opt/scheduler/latest/project/deploy-server
+install -o root -g root -m 0644 dev-tools.repo /etc/yum.repos.d/
+dnf install robotframework
+
+# for barman backup
+vi /etc/ssh/sshd_config
+# -> change port to 2222
+systemctl start sshd.service
+systemctl enable sshd.service
+----
+
+Exit the container and restart it
+
+----
+# inside container
+exit
+# on host
+systemctl restart f26_scheduler_server.service
+----
+
+== Running
+.Systemd start up dependencies
+[graphviz]
+---------------------------------------------------------------------
+digraph systemd {
+  "scheduler-init.service"->"postgresql.service" [color="green"];
+  "scheduler-init.service"->"postgresql.service" [color="black"];
+  "scheduler-seapig-postgres-notifier.service"->"scheduler-seapig-server.service" [color="green"];
+  "scheduler-seapig-postgres-notifier.service"->"scheduler-seapig-server.service" [color="black"];
+  "scheduler-rails.service"->"scheduler-init.service" [color="green"];
+  "scheduler-rails.service"->"scheduler-init.service" [color="black"];
+  "scheduler-seapig-server.service"->"scheduler-init.service" [color="green"];
+  "scheduler-seapig-server.service"->"scheduler-init.service" [color="black"];
+  "scheduler-seapig-worker@proc-00?.service"->"scheduler-seapig-server.service" [color="green"];
+  "scheduler-seapig-worker@proc-00?.service"->"scheduler-seapig-server.service" [color="black"];
+  "scheduler-seapig-router-session-manager.service"->"scheduler-seapig-server.service" [color="green"];
+  "scheduler-seapig-router-session-manager.service"->"scheduler-seapig-server.service" [color="black"];
+  "scheduler-interpreter.service"->"scheduler-rails.service" [color="green"];
+  "scheduler-interpreter.service"->"scheduler-rails.service" [color="black"];
+  "scheduler-dealer.service"->"scheduler-seapig-server.service" [color="green"];
+  "scheduler-dealer.service"->"scheduler-seapig-server.service" [color="black"];
+  "scheduler-status-saver.service"->"scheduler-seapig-server.service" [color="green"];
+  "scheduler-status-saver.service"->"scheduler-seapig-server.service" [color="black"];
+}
+---------------------------------------------------------------------
+
+.Color legend
+[format="csv",width="20%",cols="2"]
+[frame="topbot",grid="none",options="header"]
+|=============
+Color,Relation
+black,Requires
+green,After
+|=============
+
+[NOTE]
+==============================================================================
+----
+systemd-analyze dot scheduler*.service postgres*.service 2>/dev/null | grep -E\
+ 'mount|multi-user|target|slice|socket|002|003|004|005|006|007|008|009|010|011|012|013|014|015|016'\
+ -v | sed -e 's/001/00?/' -e 's/\t/  /'
+----
+==============================================================================
+
+=== scheduler-status-saver.service
+The Status-Saver, *TBD:* what is it?
+
+=== scheduler-seapig-postgres-notifier.service
+The Seapig-Postgres-Notifier, monitors the DB for changes and propagates
+changes via Seapig.
+
+=== scheduler-init.service
+This is started at the beginning to ensure the database is set up.
+See +/usr/libexec/scheduler-init.sh+ for details.
+It exits when finished and does not need to run during normal operation.
+
+=== postgresql.service
+PostgreSQL >=9.4 is needed to run Schedy.
+
+=== scheduler-seapig-server.service
+The Seapig-Server.
+
+=== scheduler-dealer.service
+The Dealer, assigns tasks to a worker.
+
+=== scheduler-rails.service
+The Rails web application, the web front end of scheduler.
+
+=== scheduler-seapig-router-session-manager.service
+The Seapig-Router-Session-Manager, *TBD:* what is it?
+
+=== scheduler-seapig-worker@proc-00?.service
+The Seapig-Workers, this are worker processes for Seapig,
+there are normally several started.
+
+== Logs
+* +journalctl+
+* +/opt/scheduler/latest/log/production.log+ -> rails log
+* +/opt/scheduler/latest/log/bureaucrat.rb.log+ -> bureaucrat hook log, also
+  the code with reports back to the workflow engine (rabbitMQ)
+* +/opt/scheduler/latest/log/data_exporter.rb.log+ -> the data exporter hook,
+  reporting nightly results to data warehouse
+* +/opt/scheduler/latest/log/data_exporter_2.rb.log+ -> the data exporter hook,
+  reporting stuff to data warehouse
+
+== Paths
+
+* +/opt/scheduler/+ contains the scheduler deployments, +latest+ is a symlink
+to the current running instance of scheduler code.
+* +/opt/scheduler/latest/+ current running instance, open part
+* +/opt/scheduler/latest/log+ log files
+* +/opt/scheduler/latest/project+ current running instance, closed part
+
+[[anchor-001]]
+== Deployment
+Use +scripts/schedy-server-deploy-script.sh+ from scheduler-demo-project
+repository. It expects that +scheduler-server+ and +scheduler-project+ git
+repositories (with these names) are in the same folder. That folder is given on
+the command line as +--repo-folder+. The target host needs to be given with
++--deploy-host+, ssh needs to be able to login to the host with that name. Also
+it is needed that a container is running and the tool +exx+ is installed on the
+server. See also +--help+. A call normally looks like:
+
+----
+schedy-server-deploy-script.sh \
+  --repo-folder $HOME/my-git-repos/ \
+  --deploy-host schedy
+  --type server --tag
+----
+
+If the gems need an update use also the +--clean --bundle+ flags.
+
+If it is a deployment for a testing environment, and don't want the git
+repository to get a tag drop the +--tag+ flag.
+
+The script deploys the scheduler-server and scheduler-project
+code including gems to
++/var/lib/machines/f26_scheduler_server/opt/scheduler/<TIMESTAMP>+.
+
+Use +roll-out.sh <TIMESTAMP>+ (on the target host outside the container), to
+switch to the new code. It stops the container, switches the symlink
++/var/lib/machines/f26_scheduler_server/opt/scheduler/latest+ to the new
++<TIMESTAMP>+ and starts the container again.
+
+For a roll back use +roll-out.sh <OLD_TIMESTAMP>+, be careful in case there was
+a DB migration!
+
+The script needs on the target host a folder +/data/deploy/scheduler-server+
+and +/data/deploy/scheduler-server-project+ and the login user needs to be able
+to write into the folders.
+
+== Trouble Shoot
+[qanda]
+.Q&A
+Just spinning gears are visible, what is broken?::
+    * Check that Seapig and it's workers are running
+    * Check that the browser can connect to the Seapig web socket
+
+Where are the logfiles?::
+    * All services are started with systemd, so use +journalctl+ and
+      it's power to show the logs of different services.
+    * Rails logs in +./log+.
+
+== Useful commands
+
+=== ess
+enter into container with: ess
+
+----
+ess
+----
+
+The script can be found in +scheduler-demo-project/scripts/ess+. In case the install
+path of the +systemd-nspawn+ container changed, then also the container name
+changed. Adapt the scripts accordingly!
+
+=== exx
+Execute a command inside the container:
+
+----
+exx 'chown -R schedy.schedy /opt/scheduler/'
+----
+
+Works also via ssh:
+
+----
+ssh scheduler-server "exx 'chown -R schedy.schedy /opt/scheduler/'"
+----
+
+The script can be found in +scheduler-demo-project/scripts/exx+. In case the install
+path of the +systemd-nspawn+ container changed, then also the container name
+changed. Adapt the scripts accordingly!
+
+
+=== Set the status of a task with curl
+It's possible to change the status of a task, e.g. to mark it _failed_ or
+_canceled_:
+
+----
+curl -v -H "Content-Type: application/json" -X POST \
+  -d "{\"task_id\": <TASK_ID>, \"status\": \"failed\"}" \
+  http://<SCHEDULER>/task_statuses
+----
+
+=== check release
+Lists all files which changed since the deployment of "latest"
+
+----
+check-release
+----
+
+=== create an execution by hand with dispatcher
+To create an execution by hand +dispatcher.rb+ can be used:
+
+----
+cd /opt/scheduler/latest/project/creator/
+bundle exec ruby dispatcher.rb \
+  --queue-name testing \
+  --project project \
+  --repository x86 \
+  --package application
+  --eventtype manual
+----
+
+See also +--help+:
+
+----
+bundle exec ruby dispatcher.rb --help
+Usage: bundle exec ruby dispatch-example.rb [options]
+    -j, --project=n                  example: obs-project
+    -p, --package=n                  example: rpm-package
+    -q, --queue-name=n               example: testing
+    -u, --username=n                 example: john_doe
+    -m, --multiplier=n               example: 1
+    -e, --eventtype=n                example: MANUAL or NIGHTLY
+    -a, --arch=n                     example: i586
+    -r, --repository=n               example: fedora_23
+    -c, --parentproject=n            example: parent-obs-project
+----
+
+=== SQL queries
+==== Get a list of running/waiting executions
+
+----
+SELECT execution_id,created_at FROM execution_statuses WHERE
+    (status = 'running' OR status = 'waiting')
+    AND current = True ORDER BY execution_id;
+----
+
+==== Get a list of waiting tasks
+
+----
+SELECT task_id FROM task_statuses WHERE status = 'waiting' AND current = true;
+----
+
+==== Get some statistics of failing devices
+Check with the following command what the ID's for *+PASS+* and *+FAIL+* are:
+
+----
+SELECT id, value FROM "values" where value = 'FAIL' OR value = 'PASS';
+
+ id | value
+----+-------
+  4 | PASS
+  9 | FAIL
+----
+
+Put in *4* (+PASS+) and *9* (+FAIL+) accordingly also replace +<START_ID>+
+and +<END_ID>+ with execution ids from the range of executions you want the
+statistics from below:
+
+----
+SELECT rs.resource_id,
+       (SELECT r.remote_id from resources r where r.id = rs.resource_id),
+       sum(case when tv.value_id = 4 then 1 else 0 end) as is_pass,
+       sum(case when tv.value_id = 9 then 1 else 0 end) as is_fail,
+       (
+         sum(case when tv.value_id = 4 then 1 else 0 end)
+         * 100 /
+         sum(case when tv.value_id > 0 then 1 end)
+       ) as rate
+FROM resource_statuses rs, tasks t, task_values tv
+WHERE
+t.id = tv.task_id AND
+rs.task_id = t.id AND
+rs.task_id is not null AND
+tv.value_id IN (4,9) AND
+t.execution_id BETWEEN <START_ID> AND <END_ID>
+GROUP BY rs.resource_id ORDER BY rate desc;
+----
+
+==== Find long taking sql queries
+This needs to run as user +postgres+
+
+----
+SELECT queryid,calls,
+  (total_time / 1000 / 60) as total_minutes,
+  (total_time/calls) as average_time, substring(query from 1 for 120) as qry
+  FROM pg_stat_statements
+  ORDER BY average_time DESC
+----
+
+Since some queries are quite long, the output is limited, to see full query
+run:
+
+----
+SELECT query FROM pg_stat_statements WHERE queryid = <QUERY_ID>;
+----
+
+== Other services
+Other services that run outside of the Scheduler Server container.
+
+=== Scheduler Server
+
+Root location::
++/var/lib/machines/f26_scheduler_server+
+
+=== Nginx
+
+Configuration file::
++/etc/nginx/nginx.conf+
+Log files::
++/var/log/nginx/+
+
+=== Logrotate
+Logfiles which Scheduler Server writes are rotated with +logrotate+
+
+----
+cat<<EOF > /etc/logrotate.d/scheduler.logrotate
+/var/lib/machines/f26_scheduler_server/opt/scheduler/20*/log/production.log {
+    missingok
+    copytruncate
+    rotate 5
+    size 512M
+    compress
+}
+
+/var/lib/machines/f26_scheduler_server/opt/scheduler/20*/log/*.rb.log {
+    missingok
+    rotate 5
+    size 100M
+    compress
+}
+EOF
+----
+
+To make it work with SE-Linux the following extra modules were created and
+loaded:
+
+----
+module logrotate-issue-002 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class dir write;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:dir write;
+
+module logrotate-issue-003 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class dir add_name;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:dir add_name;
+
+module logrotate-issue-004 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class file create;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:file create;
+
+module logrotate-issue-005 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class file getattr;
+}
+
+#============= logrotate_t ==============
+
+allow logrotate_t systemd_machined_var_lib_t:file getattr;
+
+module logrotate-issue-006 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class file { open read write };
+}
+
+#============= logrotate_t ==============
+
+allow logrotate_t systemd_machined_var_lib_t:file { open read write };
+
+module logrotate-issue-007 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class file setattr;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:file setattr;
+
+module logrotate-issue-008 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class dir remove_name;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:dir remove_name;
+
+module logrotate-issue-009 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class file ioctl;
+}
+
+#============= logrotate_t ==============
+
+allow logrotate_t systemd_machined_var_lib_t:file ioctl;
+
+module logrotate-issue-010 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class file unlink;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:file unlink;
+
+module logrotate-issue 1.0;
+
+require {
+        type systemd_machined_var_lib_t;
+        type logrotate_t;
+        class dir read;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t systemd_machined_var_lib_t:dir read;
+----
+
+// vim: set syntax=asciidoc spell spelllang=en_us:
