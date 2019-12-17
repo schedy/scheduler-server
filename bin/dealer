@@ -19,6 +19,8 @@ EM.run {
 	redeal_timer = nil
 	assignments = Hash.new(-1)
 	required_tasks_to_deal_version = 0
+	last_tasks_to_deal_invalidation = nil
+	last_worker_estimates_invalidation = {}
 
 	deal = Proc.new {
 		puts 'Re-dealing '+(tasks_to_deal.valid ? tasks_to_deal["tasks"].size.to_s : "---")+ " tasks because "+redeal_queued_for.join(",")
@@ -49,7 +51,7 @@ EM.run {
 
 			next if (not estimates.valid) or (not estimates["generated_for"]) or ((estimates["generated_for"]["Postgres::Task:assigned:"+worker] or 0) < assignments[worker])
 
-			p  "Versions OK, proceeding: "
+			puts  "Versions OK, proceeding: "
 			estimates["estimates"].each { |task_id,estimations|
 				if not tasks_to_deal["tasks"][task_id] then next end
 				estimations.each { |observation_time,estimate|
@@ -63,8 +65,8 @@ EM.run {
 						tasks_to_deal["tasks"][task_id.to_s]['execution_id'], #execution id
 						tasks_to_deal["tasks"][task_id.to_s]["actor_count"].to_i*(-1), # actor count
 						estimated_end_time,
-						estimate[2].to_i*(-1),#execution duration
-						observation_time,
+						estimate[2].to_i,#execution duration
+						observation_time.to_i,
 						iff,
 						estimate[1].map{ |set| set.map { |actor| [actor,worker].join(':') } },#remote ids of designated resources
 						task_id.to_i, #task_id, needed for specifying task
@@ -115,18 +117,34 @@ EM.run {
 				versions = JSON.parse(response.body)["seapig_dependency_versions"]
 				puts "\tgot: "+versions.inspect
 				assignments[worker] = versions["Postgres::Task:assigned:"+worker]
+				last_worker_estimates_invalidation[worker] = Time.new
 				required_tasks_to_deal_version = versions["Postgres::Task:waiting"]
-
+				last_tasks_to_deal_invalidation = Time.new
 			end
 
 			viable_alternative.each { |a| used_resources << a }
 			assigned_tasks << task_id
 		}
+
+		puts "Re-dealing loop duration: %f"%(Time.new - now)
 	}
 
-	tasks_to_deal.onstatuschange { EM.next_tick(&deal) if (redeal_queued_for << "tasks-to-deal-changed").size == 1 }
+	tasks_to_deal.onstatuschange {
+		if tasks_to_deal.valid and (tasks_to_deal.version["Postgres::Task:waiting"] >= required_tasks_to_deal_version) and last_tasks_to_deal_invalidation
+			puts "tasks-to-deal refresh time: %f"%(Time.new-last_tasks_to_deal_invalidation)
+			last_tasks_to_deal_invalidation = nil
+
+		end
+		EM.next_tick(&deal) if (redeal_queued_for << "tasks-to-deal-changed").size == 1
+	}
+
 	worker_estimates.onchange { |object|
-		puts "estimates changed: "+object.version.inspect
+		worker = object.id.split(':')[1]
+		puts "worker %s - estimates changed: %s"%[worker, object.version.inspect]
+		if object.valid and object["generated_for"] and assignments[worker] and ((object["generated_for"]["Postgres::Task:assigned:"+worker] or 0) >= assignments[worker]) and last_worker_estimates_invalidation[worker]
+			puts "%s - estimates refresh time: %f"%[worker, Time.new-last_worker_estimates_invalidation[worker]]
+			last_worker_estimates_invalidation[worker] = nil
+		end
 		object.onstatuschange { EM.next_tick(&deal) if (redeal_queued_for << "worker-estimates-changed").size == 1 }
 		EM.next_tick(&deal) if (redeal_queued_for << "worker-estimates-changed").size == 1
 	}

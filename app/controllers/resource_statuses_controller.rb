@@ -7,7 +7,11 @@ class ResourceStatusesController < ApplicationController
 			resource_statuses = params[:statuses]
 			resource_statuses.each { |worker_name, resources|
 				worker = Worker.find_or_create_by(name: worker_name)
-				resources.each { |description|
+
+
+				(resources or []).each { |description|
+
+				#resources.each { |description|
 					worker.with_lock {
 						resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: description["id"])
 						resource_status = ResourceStatus.new

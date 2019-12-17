@@ -2,37 +2,103 @@
 -- PostgreSQL database dump
 --
 
---
--- dumpped as user schedy with:
--- pg_dump --schema-only --no-owner --no-privileges scheduler > pg_dump.sql
---
+---
+--- dumpped as user postgres with:
+--- pg_dump --schema-only --no-owner --no-privileges scheduler > pg_dump.sql
+---
+-- Dumped from database version 9.6.3
+-- Dumped by pg_dump version 9.6.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+--
+-- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_stat_statements; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_stat_statements IS 'track execution statistics of all SQL statements executed';
+
 
 SET search_path = public, pg_catalog;
+
+--
+-- Name: update_stats_counter(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION update_stats_counter() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+ IF (TG_OP = 'INSERT') AND NEW.current IS TRUE THEN
+  INSERT INTO stats_counter (status_table,status_name,status_counter) VALUES (TG_TABLE_NAME,NEW.status, 1) ON CONFLICT (status_table,status_name) DO UPDATE SET status_counter = stats_counter.status_counter + 1;
+ ELSIF NEW.current IS NOT TRUE AND OLD.current IS TRUE THEN
+  INSERT INTO stats_counter (status_table,status_name,status_counter) VALUES (TG_TABLE_NAME,NEW.status, 0) ON CONFLICT (status_table,status_name) DO UPDATE SET status_counter = stats_counter.status_counter - 1;
+ END IF;
+
+ RETURN NEW;
+END;
+$$;
+
 
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- Name: artifacts; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE ar_internal_metadata (
+    key character varying NOT NULL,
+    value character varying,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: artifacts; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE artifacts (
     id integer NOT NULL,
+    execution_id integer,
     task_id integer,
-    name text,
+    size integer,
     mimetype text,
-    data bytea,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
-    execution_id integer
+    name text,
+    storage_handler text,
+    storage_handler_data jsonb,
+    external_url text,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
 );
 
 
@@ -56,7 +122,38 @@ ALTER SEQUENCE artifacts_id_seq OWNED BY artifacts.id;
 
 
 --
--- Name: execution_hooks; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: broken_artifacts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE broken_artifacts (
+    id integer,
+    min timestamp without time zone,
+    ct bigint
+);
+
+
+--
+-- Name: broken_artifacts2; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE broken_artifacts2 (
+    id integer,
+    min timestamp without time zone
+);
+
+
+--
+-- Name: broken_artifacts3; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE broken_artifacts3 (
+    id integer,
+    max timestamp without time zone
+);
+
+
+--
+-- Name: execution_hooks; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE execution_hooks (
@@ -89,7 +186,7 @@ ALTER SEQUENCE execution_hooks_id_seq OWNED BY execution_hooks.id;
 
 
 --
--- Name: execution_statuses; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_statuses; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE execution_statuses (
@@ -122,16 +219,16 @@ ALTER SEQUENCE execution_statuses_id_seq OWNED BY execution_statuses.id;
 
 
 --
--- Name: execution_values; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_values; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE execution_values (
     id integer NOT NULL,
     execution_id integer,
     value_id integer,
-    deleted_at timestamp without time zone,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    property_id integer
 );
 
 
@@ -155,7 +252,7 @@ ALTER SEQUENCE execution_values_id_seq OWNED BY execution_values.id;
 
 
 --
--- Name: executions; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: executions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE executions (
@@ -187,7 +284,7 @@ ALTER SEQUENCE executions_id_seq OWNED BY executions.id;
 
 
 --
--- Name: properties; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: properties; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE properties (
@@ -218,7 +315,39 @@ ALTER SEQUENCE properties_id_seq OWNED BY properties.id;
 
 
 --
--- Name: resource_statuses; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: requirements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE requirements (
+    id integer NOT NULL,
+    uuid uuid,
+    description jsonb,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: requirements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE requirements_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: requirements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE requirements_id_seq OWNED BY requirements.id;
+
+
+--
+-- Name: resource_statuses; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE resource_statuses (
@@ -228,7 +357,8 @@ CREATE TABLE resource_statuses (
     resource_id integer,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    current boolean
+    current boolean,
+    role text
 );
 
 
@@ -252,7 +382,7 @@ ALTER SEQUENCE resource_statuses_id_seq OWNED BY resource_statuses.id;
 
 
 --
--- Name: resources; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: resources; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE resources (
@@ -285,7 +415,37 @@ ALTER SEQUENCE resources_id_seq OWNED BY resources.id;
 
 
 --
--- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: resources_task_statuses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE resources_task_statuses (
+    id integer NOT NULL,
+    resource_id integer,
+    task_status_id integer
+);
+
+
+--
+-- Name: resources_task_statuses_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE resources_task_statuses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: resources_task_statuses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE resources_task_statuses_id_seq OWNED BY resources_task_statuses.id;
+
+
+--
+-- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE schema_migrations (
@@ -294,7 +454,7 @@ CREATE TABLE schema_migrations (
 
 
 --
--- Name: seapig_dependencies; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_dependencies; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE seapig_dependencies (
@@ -346,7 +506,7 @@ ALTER SEQUENCE seapig_dependency_version_seq OWNED BY seapig_dependencies.curren
 
 
 --
--- Name: seapig_router_session_states; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_session_states; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE seapig_router_session_states (
@@ -379,14 +539,15 @@ ALTER SEQUENCE seapig_router_session_states_id_seq OWNED BY seapig_router_sessio
 
 
 --
--- Name: seapig_router_sessions; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_sessions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE seapig_router_sessions (
     id integer NOT NULL,
     key text,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    token text
 );
 
 
@@ -410,7 +571,52 @@ ALTER SEQUENCE seapig_router_sessions_id_seq OWNED BY seapig_router_sessions.id;
 
 
 --
--- Name: task_statuses; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: stats_counter; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE stats_counter (
+    status_table character varying NOT NULL,
+    status_name character varying NOT NULL,
+    status_counter integer NOT NULL
+);
+
+
+--
+-- Name: task_hooks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE task_hooks (
+    id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    hook text,
+    status text,
+    execution_id integer,
+    task_id integer
+);
+
+
+--
+-- Name: task_hooks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE task_hooks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: task_hooks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE task_hooks_id_seq OWNED BY task_hooks.id;
+
+
+--
+-- Name: task_statuses; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE task_statuses (
@@ -444,16 +650,16 @@ ALTER SEQUENCE task_statuses_id_seq OWNED BY task_statuses.id;
 
 
 --
--- Name: task_values; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: task_values; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE task_values (
     id integer NOT NULL,
     task_id integer,
     value_id integer,
-    deleted_at timestamp without time zone,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    property_id integer
 );
 
 
@@ -477,7 +683,7 @@ ALTER SEQUENCE task_values_id_seq OWNED BY task_values.id;
 
 
 --
--- Name: tasks; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: tasks; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE tasks (
@@ -485,7 +691,8 @@ CREATE TABLE tasks (
     execution_id integer,
     description jsonb,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    requirement_id integer NOT NULL
 );
 
 
@@ -509,7 +716,7 @@ ALTER SEQUENCE tasks_id_seq OWNED BY tasks.id;
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE users (
@@ -540,7 +747,7 @@ ALTER SEQUENCE users_id_seq OWNED BY users.id;
 
 
 --
--- Name: values; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: values; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE "values" (
@@ -572,7 +779,7 @@ ALTER SEQUENCE values_id_seq OWNED BY "values".id;
 
 
 --
--- Name: worker_statuses; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: worker_statuses; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE worker_statuses (
@@ -605,7 +812,7 @@ ALTER SEQUENCE worker_statuses_id_seq OWNED BY worker_statuses.id;
 
 
 --
--- Name: workers; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: workers; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE workers (
@@ -636,133 +843,162 @@ ALTER SEQUENCE workers_id_seq OWNED BY workers.id;
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: artifacts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY artifacts ALTER COLUMN id SET DEFAULT nextval('artifacts_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: execution_hooks id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY execution_hooks ALTER COLUMN id SET DEFAULT nextval('execution_hooks_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: execution_statuses id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY execution_statuses ALTER COLUMN id SET DEFAULT nextval('execution_statuses_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: execution_values id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY execution_values ALTER COLUMN id SET DEFAULT nextval('execution_values_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: executions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY executions ALTER COLUMN id SET DEFAULT nextval('executions_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: properties id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY properties ALTER COLUMN id SET DEFAULT nextval('properties_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: requirements id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY requirements ALTER COLUMN id SET DEFAULT nextval('requirements_id_seq'::regclass);
+
+
+--
+-- Name: resource_statuses id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY resource_statuses ALTER COLUMN id SET DEFAULT nextval('resource_statuses_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: resources id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY resources ALTER COLUMN id SET DEFAULT nextval('resources_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: resources_task_statuses id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY resources_task_statuses ALTER COLUMN id SET DEFAULT nextval('resources_task_statuses_id_seq'::regclass);
+
+
+--
+-- Name: seapig_dependencies id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY seapig_dependencies ALTER COLUMN id SET DEFAULT nextval('seapig_dependencies_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: seapig_router_session_states id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY seapig_router_session_states ALTER COLUMN id SET DEFAULT nextval('seapig_router_session_states_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: seapig_router_sessions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY seapig_router_sessions ALTER COLUMN id SET DEFAULT nextval('seapig_router_sessions_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: task_hooks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY task_hooks ALTER COLUMN id SET DEFAULT nextval('task_hooks_id_seq'::regclass);
+
+
+--
+-- Name: task_statuses id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY task_statuses ALTER COLUMN id SET DEFAULT nextval('task_statuses_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: task_values id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY task_values ALTER COLUMN id SET DEFAULT nextval('task_values_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: tasks id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY tasks ALTER COLUMN id SET DEFAULT nextval('tasks_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: values id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY "values" ALTER COLUMN id SET DEFAULT nextval('values_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: worker_statuses id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY worker_statuses ALTER COLUMN id SET DEFAULT nextval('worker_statuses_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: workers id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY workers ALTER COLUMN id SET DEFAULT nextval('workers_id_seq'::regclass);
 
 
 --
--- Name: artifacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY ar_internal_metadata
+    ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: artifacts artifacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY artifacts
@@ -770,7 +1006,7 @@ ALTER TABLE ONLY artifacts
 
 
 --
--- Name: execution_hooks_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_hooks execution_hooks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY execution_hooks
@@ -778,7 +1014,7 @@ ALTER TABLE ONLY execution_hooks
 
 
 --
--- Name: execution_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_statuses execution_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY execution_statuses
@@ -786,7 +1022,7 @@ ALTER TABLE ONLY execution_statuses
 
 
 --
--- Name: execution_values_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_values execution_values_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY execution_values
@@ -794,7 +1030,7 @@ ALTER TABLE ONLY execution_values
 
 
 --
--- Name: executions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: executions executions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY executions
@@ -802,7 +1038,7 @@ ALTER TABLE ONLY executions
 
 
 --
--- Name: properties_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: properties properties_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY properties
@@ -810,7 +1046,23 @@ ALTER TABLE ONLY properties
 
 
 --
--- Name: resource_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: requirements requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY requirements
+    ADD CONSTRAINT requirements_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: requirements requirements_unique_uuid; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY requirements
+    ADD CONSTRAINT requirements_unique_uuid UNIQUE (uuid);
+
+
+--
+-- Name: resource_statuses resource_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY resource_statuses
@@ -818,7 +1070,7 @@ ALTER TABLE ONLY resource_statuses
 
 
 --
--- Name: resources_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: resources resources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY resources
@@ -826,7 +1078,15 @@ ALTER TABLE ONLY resources
 
 
 --
--- Name: seapig_dependencies_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: resources_task_statuses resources_task_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY resources_task_statuses
+    ADD CONSTRAINT resources_task_statuses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: seapig_dependencies seapig_dependencies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY seapig_dependencies
@@ -834,7 +1094,7 @@ ALTER TABLE ONLY seapig_dependencies
 
 
 --
--- Name: seapig_router_session_states_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_session_states seapig_router_session_states_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY seapig_router_session_states
@@ -842,7 +1102,7 @@ ALTER TABLE ONLY seapig_router_session_states
 
 
 --
--- Name: seapig_router_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_sessions seapig_router_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY seapig_router_sessions
@@ -850,7 +1110,23 @@ ALTER TABLE ONLY seapig_router_sessions
 
 
 --
--- Name: task_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: stats_counter status_name_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY stats_counter
+    ADD CONSTRAINT status_name_pkey PRIMARY KEY (status_table, status_name);
+
+
+--
+-- Name: task_hooks task_hooks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY task_hooks
+    ADD CONSTRAINT task_hooks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: task_statuses task_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY task_statuses
@@ -858,7 +1134,7 @@ ALTER TABLE ONLY task_statuses
 
 
 --
--- Name: task_values_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: task_values task_values_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY task_values
@@ -866,7 +1142,7 @@ ALTER TABLE ONLY task_values
 
 
 --
--- Name: tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: tasks tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY tasks
@@ -874,7 +1150,7 @@ ALTER TABLE ONLY tasks
 
 
 --
--- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY users
@@ -882,7 +1158,7 @@ ALTER TABLE ONLY users
 
 
 --
--- Name: values_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: values values_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY "values"
@@ -890,7 +1166,7 @@ ALTER TABLE ONLY "values"
 
 
 --
--- Name: worker_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: worker_statuses worker_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY worker_statuses
@@ -898,7 +1174,7 @@ ALTER TABLE ONLY worker_statuses
 
 
 --
--- Name: workers_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: workers workers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY workers
@@ -906,271 +1182,270 @@ ALTER TABLE ONLY workers
 
 
 --
--- Name: artifacts_execution_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: artifacts_created_at_storage_handler_id_idx1; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX artifacts_execution_id_idx ON artifacts USING btree (execution_id) WHERE (execution_id IS NOT NULL);
-
-
---
--- Name: artifacts_task_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX artifacts_task_id_idx ON artifacts USING btree (task_id) WHERE (execution_id IS NOT NULL);
+CREATE INDEX artifacts_created_at_storage_handler_id_idx1 ON artifacts USING btree (created_at, storage_handler, id);
 
 
 --
--- Name: artifacts_task_id_name_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: artifacts_execution_id_idx1; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX artifacts_task_id_name_idx ON artifacts USING btree (task_id, name);
-
-
---
--- Name: artifacts_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX artifacts_updated_at_idx ON artifacts USING btree (updated_at);
+CREATE INDEX artifacts_execution_id_idx1 ON artifacts USING btree (execution_id) WHERE (execution_id IS NOT NULL);
 
 
 --
--- Name: execution_hooks_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: artifacts_task_id_name_idx1; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX artifacts_task_id_name_idx1 ON artifacts USING btree (task_id, name) WHERE (task_id IS NOT NULL);
+
+
+--
+-- Name: broken_artifacts3_id_max_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX broken_artifacts3_id_max_idx ON broken_artifacts3 USING btree (id, max);
+
+
+--
+-- Name: broken_artifacts_id_min_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX broken_artifacts_id_min_idx ON broken_artifacts USING btree (id, min);
+
+
+--
+-- Name: execution_hooks_updated_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX execution_hooks_updated_at_idx ON execution_hooks USING btree (updated_at);
 
 
 --
--- Name: execution_statuses_execution_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_statuses_execution_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX execution_statuses_execution_id_idx ON execution_statuses USING btree (execution_id);
 
 
 --
--- Name: execution_statuses_execution_id_idx1; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_statuses_execution_id_idx1; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX execution_statuses_execution_id_idx1 ON execution_statuses USING btree (execution_id) WHERE current;
 
 
 --
--- Name: execution_statuses_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX execution_statuses_updated_at_idx ON execution_statuses USING btree (updated_at);
-
-
---
--- Name: execution_values_execution_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_values_execution_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX execution_values_execution_id_idx ON execution_values USING btree (execution_id);
 
 
 --
--- Name: execution_values_execution_id_value_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_values_execution_id_value_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX execution_values_execution_id_value_id_idx ON execution_values USING btree (execution_id, value_id);
 
 
 --
--- Name: execution_values_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_values_value_id_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX execution_values_updated_at_idx ON execution_values USING btree (updated_at);
+CREATE INDEX execution_values_value_id_id_idx ON execution_values USING btree (value_id, id);
 
 
 --
--- Name: execution_values_value_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: execution_values_value_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX execution_values_value_id_idx ON execution_values USING btree (value_id);
 
 
 --
--- Name: executions_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX executions_updated_at_idx ON executions USING btree (updated_at);
-
-
---
--- Name: executions_user_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: executions_user_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX executions_user_id_idx ON executions USING btree (user_id);
 
 
 --
--- Name: index_seapig_router_sessions_on_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: index_seapig_router_sessions_on_key; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX index_seapig_router_sessions_on_key ON seapig_router_sessions USING btree (key);
 
 
 --
--- Name: properties_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX properties_updated_at_idx ON properties USING btree (updated_at);
-
-
---
--- Name: resource_statuses_resource_id_created_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: resource_statuses_resource_id_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX resource_statuses_resource_id_created_at_idx ON resource_statuses USING btree (resource_id, created_at) WHERE (task_id IS NULL);
 
 
 --
--- Name: resource_statuses_resource_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: resource_statuses_resource_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX resource_statuses_resource_id_idx ON resource_statuses USING btree (resource_id) WHERE current;
 
 
 --
--- Name: resource_statuses_task_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: resource_statuses_task_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX resource_statuses_task_id_idx ON resource_statuses USING btree (task_id);
 
 
 --
--- Name: resources_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_dependencies_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX resources_updated_at_idx ON resources USING btree (updated_at);
-
-
---
--- Name: seapig_dependencies_expr_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX seapig_dependencies_expr_idx ON seapig_dependencies USING btree (((current_version <> reported_version))) WHERE (current_version <> reported_version);
+CREATE INDEX seapig_dependencies_id_idx ON seapig_dependencies USING btree (id) WHERE (current_version <> reported_version);
 
 
 --
--- Name: seapig_dependencies_name_current_version_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_dependencies_name_current_version_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX seapig_dependencies_name_current_version_idx ON seapig_dependencies USING btree (name, current_version);
 
 
 --
--- Name: seapig_router_session_states_index_1; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_session_states_index_1; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX seapig_router_session_states_index_1 ON seapig_router_session_states USING btree (seapig_router_session_id, state_id);
 
 
 --
--- Name: seapig_router_session_states_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_sessions_key_token_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX seapig_router_session_states_updated_at_idx ON seapig_router_session_states USING btree (updated_at);
-
-
---
--- Name: seapig_router_sessions_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX seapig_router_sessions_updated_at_idx ON seapig_router_sessions USING btree (updated_at);
+CREATE UNIQUE INDEX seapig_router_sessions_key_token_index ON seapig_router_sessions USING btree (key, token);
 
 
 --
--- Name: task_statuses_task_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: seapig_router_sessions_token_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX seapig_router_sessions_token_index ON seapig_router_sessions USING btree (token);
+
+
+--
+-- Name: task_statuses_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX task_statuses_status_idx ON task_statuses USING btree (status) WHERE (current = true);
+
+
+--
+-- Name: task_statuses_task_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX task_statuses_task_id_idx ON task_statuses USING btree (task_id) WHERE current;
 
 
 --
--- Name: task_statuses_task_id_idx1; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: task_statuses_task_id_idx1; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX task_statuses_task_id_idx1 ON task_statuses USING btree (task_id) WHERE (current AND (status = 'waiting'::text));
 
 
 --
--- Name: task_statuses_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: task_statuses_task_id_idx2; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX task_statuses_updated_at_idx ON task_statuses USING btree (updated_at);
+CREATE INDEX task_statuses_task_id_idx2 ON task_statuses USING btree (task_id) WHERE (current AND (status = 'assigned'::text));
 
 
 --
--- Name: task_values_task_id_value_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: task_statuses_worker_id_created_at_task_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX task_statuses_worker_id_created_at_task_id_idx ON task_statuses USING btree (worker_id, created_at, task_id) WHERE (current AND (status = 'assigned'::text));
+
+
+--
+-- Name: task_statuses_worker_id_task_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX task_statuses_worker_id_task_id_idx ON task_statuses USING btree (worker_id, task_id) WHERE (current AND (status = 'accepted'::text));
+
+
+--
+-- Name: task_values_task_id_value_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX task_values_task_id_value_id_idx ON task_values USING btree (task_id, value_id);
 
 
 --
--- Name: tasks_execution_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: tasks_execution_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX tasks_execution_id_idx ON tasks USING btree (execution_id);
 
 
 --
--- Name: tasks_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX tasks_updated_at_idx ON tasks USING btree (updated_at);
-
-
---
--- Name: unique_schema_migrations; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: unique_schema_migrations; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX unique_schema_migrations ON schema_migrations USING btree (version);
 
 
 --
--- Name: users_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: values_id_property_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX users_updated_at_idx ON users USING btree (updated_at);
+CREATE INDEX values_id_property_id_idx ON "values" USING btree (id, property_id);
 
 
 --
--- Name: values_property_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: values_property_id_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX values_property_id_id_idx ON "values" USING btree (property_id, id);
+
+
+--
+-- Name: values_property_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX values_property_id_idx ON "values" USING btree (property_id);
 
 
 --
--- Name: values_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE INDEX values_updated_at_idx ON "values" USING btree (updated_at);
-
-
---
--- Name: worker_statuses_worker_id_idx1; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: worker_statuses_worker_id_idx1; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX worker_statuses_worker_id_idx1 ON worker_statuses USING btree (worker_id) WHERE current;
 
 
 --
--- Name: workers_updated_at_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: workers_name_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX workers_updated_at_idx ON workers USING btree (updated_at);
+CREATE INDEX workers_name_id_idx ON workers USING btree (name, id);
+
 
 --
--- created_at: if that table exits the scheduler-init.sh script assumes db is set up
--- should be at the end of the scipt.
+-- Name: execution_statuses trigger_update_stats_counter_on_execution_statuses; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TABLE db_created_at (
-    time_stamp timestamp without time zone NOT NULL
-);
+CREATE TRIGGER trigger_update_stats_counter_on_execution_statuses AFTER INSERT OR UPDATE ON execution_statuses FOR EACH ROW EXECUTE PROCEDURE update_stats_counter();
+
+
+--
+-- Name: task_statuses trigger_update_stats_counter_on_task_statuses; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trigger_update_stats_counter_on_task_statuses AFTER INSERT OR UPDATE ON task_statuses FOR EACH ROW EXECUTE PROCEDURE update_stats_counter();
+
 
 --
 -- PostgreSQL database dump complete

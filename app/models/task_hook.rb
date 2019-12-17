@@ -1,0 +1,2 @@
+class TaskHook < ApplicationRecord
+end

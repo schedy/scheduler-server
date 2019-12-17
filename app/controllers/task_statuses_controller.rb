@@ -59,6 +59,8 @@ class TaskStatusesController < ApplicationController
 								resource.save
 							}
 						end
+						task.trigger_hooks(new_status)
+
 
 					}
 					execution.update_status(true)

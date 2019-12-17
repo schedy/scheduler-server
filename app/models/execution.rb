@@ -14,10 +14,10 @@ class Execution < ActiveRecord::Base
 		execution = nil
 		Execution.transaction {
 			user_id = if data["creator"]
-				User.find_or_create_by!(nickname: data["creator"]).id
-			else
-				nil
-			end
+						  User.find_or_create_by!(nickname: data["creator"]).id
+					  else
+						  nil
+					  end
 
 			execution = Execution.create!(user_id: user_id, data: data["data"])
 			execution.with_lock {
@@ -35,12 +35,14 @@ class Execution < ActiveRecord::Base
 						execution_value = ExecutionValue.create!(execution_id: execution.id, value_id: value.id, property_id: property.id)
 					}
 				}
+				hooks = if data["hooks"].is_a?(String) then JSON.parse(data["hooks"].gsub("\\","").gsub("=>",":")) else data["hooks"] end
 
-				(data["hooks"] or {}).each_pair { |status, executables|
+				(hooks or {}).each_pair { |status, executables|
 					executables.each { |executable|
 						ExecutionHook.create!(execution_id: execution.id, status: status, hook: executable)
 					}
 				}
+
 
 				SeapigDependency.bump("Execution","Task","Task:waiting",'Execution:%010i'%[execution.id])
 			}

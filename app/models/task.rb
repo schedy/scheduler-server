@@ -6,6 +6,7 @@ class Task < ActiveRecord::Base
 	has_many :artifacts
 	has_many :task_values
 	has_many :resource_statuses
+	has_many :task_hooks
 	belongs_to :requirement
 
 
@@ -30,28 +31,41 @@ class Task < ActiveRecord::Base
 		}
 
 		tasks = Task.find_by_sql("WITH new_tasks AS (                                                                      "+
-		                         "        INSERT INTO tasks(execution_id,requirement_id,description,created_at,updated_at) "+
-		                         "        VALUES #{task_params_group.join(',')}                                            "+
-		                         "        RETURNING id)                                                                    "+
-		                         "INSERT INTO task_statuses (task_id,status,current,created_at,updated_at)                 "+
-		                         "SELECT id,'waiting',true,now(),now()                                                     "+
-		                         "FROM new_tasks                                                                           "+
-		                         "RETURNING task_id                                                                        ")
+								"        INSERT INTO tasks(execution_id,requirement_id,description,created_at,updated_at) "+
+								"        VALUES #{task_params_group.join(',')}                                            "+
+								"        RETURNING id)                                                                    "+
+								"INSERT INTO task_statuses (task_id,status,current,created_at,updated_at)                 "+
+								"SELECT id,'waiting',true,now(),now()                                                     "+
+								"FROM new_tasks                                                                           "+
+								"RETURNING task_id                                                                        ")
 
 		task_values = []
 		[tasks,task_descriptions].transpose.each { |task,task_params|
+			if task_params["hooks"]
+				task_params["hooks"].each_pair { |k,v|
+						TaskHook.create!(task_id: task.task_id, hook: v, status: k)
+				}
+			end
 			 (task_params["tags"] or {}).each_pair { |property_name, tag_names|
-				 tag_names.uniq.each { |value_name|
+				tag_names.uniq.each { |value_name|
 					 property = properties[property_name]
 					 value = values[[property.id, value_name]]
 					 task_values.push("(#{task.task_id},#{value.id},#{property.id},now(),now())")
-				 }
+				}
 			 }
+
 		 }
 
-		 TaskValue.connection.execute("INSERT INTO task_values(task_id,value_id,property_id,created_at,updated_at) VALUES "+task_values.join(','))
+		TaskValue.connection.execute("INSERT INTO task_values(task_id,value_id,property_id,created_at,updated_at) VALUES "+task_values.join(','))
 
-	 end
 
+
+	end
+
+	def trigger_hooks(status)
+		self.task_hooks.where(status: status).each { |hook|
+			`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1 &`  #FIXME: vailidate, escape, etc.
+		}
+	end
 
 end
