@@ -27,6 +27,8 @@ check_db() {
         elif [ $HAS_ROLE = 42 ]; then
             echo "Is postgresql not running? giving up!"
             return 42
+        elif [ $HAS_ROLE = 1 ]; then
+            CU_OK=0
         fi
 
         if [ $CU_OK = 0 ]; then
@@ -38,18 +40,21 @@ check_db() {
             elif [ $HAS_ROLE = 42 ]; then
                 echo "Is postgresql not running? giving up!"
                 return 42
+            elif [ $HAS_ROLE = 1 ]; then
+                CDB_OK=0
             fi
 
             if [ $CDB_OK = 0 ]; then
-                HAS_CA=$(su -c "/usr/bin/psql -A -t -c \"SELECT count(table_name) FROM information_schema.tables WHERE table_schema = 'public' and table_name = 'created_at' \" scheduler" schedy 2>/dev/null || echo "42")
-                if [ $HAS_CA = 0 ]; then
+                HAS_EXEC=$(su -c "/usr/bin/psql -A -t -c \"SELECT count(table_name) FROM information_schema.tables WHERE table_schema = 'public' and table_name = 'executions' \" scheduler" schedy 2>/dev/null || echo "42")
+                if [ $HAS_EXEC = 0 ]; then
                     echo "Table created_at does not exist! Import the db schema!"
                     su -c "/usr/bin/psql --set=ON_ERROR_STOP=on --file @INSTALL_DIR@/db/pg_dump.sql scheduler" schedy
-                    su -c "/usr/bin/psql -A -t -c \"INSERT INTO db_created_at(time_stamp) VALUES (now())\" scheduler" schedy
                     PGD_OK=$?
-                elif [ $HAS_ROLE = 42 ]; then
+                elif [ $HAS_EXEC = 42 ]; then
                     echo "Is postgresql not running? giving up!"
                     return 42
+                elif [ $HAS_EXEC = 1 ]; then
+                    PGD_OK=0
                 fi
 
                 if [ $PGD_OK = 0 ]; then
