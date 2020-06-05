@@ -219,7 +219,7 @@ GEM
       websocket-eventmachine-base (~> 1.0)
     websocket-eventmachine-server (1.0.1)
       websocket-eventmachine-base (~> 1.0)
-    websocket-extensions (0.1.3)
+    websocket-extensions (0.1.5)
     websocket-native (1.0.0)
 
 PLATFORMS
