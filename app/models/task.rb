@@ -57,15 +57,18 @@ class Task < ActiveRecord::Base
 		 }
 
 		TaskValue.connection.execute("INSERT INTO task_values(task_id,value_id,property_id,created_at,updated_at) VALUES "+task_values.join(','))
-
-
-
+		
+		tasks.map { |task| task.task_id }
 	end
 
 	def trigger_hooks(status)
 		self.task_hooks.where(status: status).each { |hook|
 			`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1 &`  #FIXME: vailidate, escape, etc.
 		}
+	end
+
+	def duplicate
+		Task.create_from_description(self.execution, [self.description.merge("requirements" => self.requirement.description)])[0]
 	end
 
 end

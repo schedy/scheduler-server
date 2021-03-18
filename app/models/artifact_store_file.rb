@@ -26,12 +26,35 @@ class ArtifactStoreFile < ArtifactStore
 
 
 	def self.locate_file(artifact, basename)
-		path = directory(artifact, "current")+"/"+basename
-		return path if File.file?(path)
-		Dir[Rails.root.to_s+"/public/storage/artifacts/*"].select { |volume| Dir.exist?(volume) and not File.basename(volume) == 'current' }.sort.each { |volume|
-			path = directory(artifact, File.basename(volume))+"/"+basename
-			return path if File.file?(path)
-		}
+		# probably correct version
+		#path = directory(artifact, "current")+"/"+basename
+		#return path if File.file?(path)
+		#Dir[Rails.root.to_s+"/public/storage/artifacts/*"].select { |volume| Dir.exist?(volume) and not File.basename(volume) == 'current' }.sort.each { |volume|
+		#	path = directory(artifact, File.basename(volume))+"/"+basename
+		#	return path if File.file?(path)
+		#}
+
+		# version for legacy (broken) artifacts
+		path=''
+		path = if File.file?(directory(artifact, "current")+"/"+basename)
+			(directory(artifact, "current")+"/"+basename)
+		elsif File.file?(directory(artifact, "current")+"/_"+basename.match(/(^.*?)_(.*)/)[2])
+			(directory(artifact, "current")+"/_"+basename.match(/(^.*?)_(.*)/)[2])
+		else 
+			nil
+		end
+		if path and File.file?(path.to_s) then return path else 
+			Dir[Rails.root.to_s+"/public/storage/artifacts/*"].select { |volume| Dir.exist?(volume) and not File.basename(volume) == 'current' }.sort.each { |volume|
+
+				path = if File.file?(directory(artifact, File.basename(volume))+"/"+basename)
+					       (directory(artifact, File.basename(volume) )+"/"+basename)
+				       elsif File.file?(directory(artifact, File.basename(volume))+"/_"+basename.match(/(^.*?)_(.*)/)[2])
+					       (directory(artifact, File.basename(volume))+"/_"+basename.match(/(^.*?)_(.*)/)[2])
+				end
+				
+			return path if File.file?(path.to_s)
+			}
+		end
 		raise "File not found: %s"%[basename]
 	end
 

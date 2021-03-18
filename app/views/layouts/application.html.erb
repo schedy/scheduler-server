@@ -2,10 +2,14 @@
 <html>
 <head>
 	<title>Scheduler</title>
-	<%= stylesheet_link_tag    '/project/project', media: 'all' %>
-	<%= stylesheet_link_tag    'application', media: 'all' %>
-	<%= javascript_include_tag '/project/project' %>
-	<%= javascript_include_tag 'application' %>
+	<%= csrf_meta_tags %>
+	<%= csp_meta_tag %>
+
+	<%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload'  %>
+	<%= javascript_pack_tag 'project_js', 'data-turbolinks-track': 'reload'  %>
+	<%= javascript_pack_tag 'project_css', 'data-turbolinks-track': 'reload'  %>
+	<%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload'  %>
+
 	<%= csrf_meta_tags %>
 </head>
 <body>

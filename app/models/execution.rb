@@ -4,7 +4,7 @@ class Execution < ActiveRecord::Base
 	has_many :tasks
 	has_many :execution_statuses
 	has_one :status, ->{ where current: true }, class_name: "ExecutionStatus"
-	belongs_to :user
+	belongs_to :user, optional: true
 	has_many :execution_values
 	has_many :execution_hooks
 	has_many :artifacts
@@ -14,10 +14,10 @@ class Execution < ActiveRecord::Base
 		execution = nil
 		Execution.transaction {
 			user_id = if data["creator"]
-						  User.find_or_create_by!(nickname: data["creator"]).id
-					  else
-						  nil
-					  end
+				User.find_or_create_by!(nickname: data["creator"]).id
+			else
+				nil
+			end
 
 			execution = Execution.create!(user_id: user_id, data: data["data"])
 			execution.with_lock {
@@ -29,12 +29,14 @@ class Execution < ActiveRecord::Base
 				Task.create_from_description(execution, data["tasks"])
 
 				(data["tags"] or {}).each_pair { |property_name, tag_names|
-					tag_names.uniq.each { |value_name|
+					[tag_names].flatten.uniq.each { |value_name|
 						property = properties[property_name]
 						value = values[[property.id, value_name]]
 						execution_value = ExecutionValue.create!(execution_id: execution.id, value_id: value.id, property_id: property.id)
 					}
 				}
+
+				#TODO: this is horrible, it has to go
 				hooks = if data["hooks"].is_a?(String) then JSON.parse(data["hooks"].gsub("\\","").gsub("=>",":")) else data["hooks"] end
 
 				(hooks or {}).each_pair { |status, executables|
@@ -42,7 +44,6 @@ class Execution < ActiveRecord::Base
 						ExecutionHook.create!(execution_id: execution.id, status: status, hook: executable)
 					}
 				}
-
 
 				SeapigDependency.bump("Execution","Task","Task:waiting",'Execution:%010i'%[execution.id])
 			}
@@ -203,13 +204,13 @@ class Execution < ActiveRecord::Base
 			[ "                    WHERE t.execution_id = e.id                                                 ", "task" ],
 			[ "                            AND ts.task_id = t.id                                               ", "task" ],
 			[ "                            AND ts.current                                                      ", "task" ],
-			[ "                            AND NOT EXISTS (SELECT 1                                            ", "task_filter" ],
-			[ "                                            FROM task_values tv                                 ", "task_filter" ],
-			[ "                                            WHERE tv.task_id = t.id AND tv.value_id IN (?))     ", "task_filter" ],
-			[ "                            AND (SELECT count(distinct tv.property_id)                          ", "task_filter" ],
-			[ "                                            FROM task_values tv                                 ", "task_filter" ],
-			[ "                                            WHERE tv.task_id = t.id                             ", "task_filter" ],
-			[ "                                                  AND tv.property_id IN (?)) = ?                ", "task_filter" ],
+			[ "                            AND NOT EXISTS (SELECT 1                                                                                          ", "task_filter" ],
+			[ "                                            FROM unnest(ARRAY[?]) AS p(id) LEFT OUTER JOIN task_values tv                                     ", "task_filter" ],
+			[ "                                            ON tv.task_id = t.id AND tv.property_id = p.id::integer                                           ", "task_filter" ],
+			[ "                                            GROUP BY p.id HAVING (count(tv.*) > 0 AND count(tv.*) FILTER (WHERE tv.value_id  NOT IN (?)) = 0) ", "task_filter" ],
+			[ "                                                              OR (count(tv.*) = 0 AND p.id IN (?))                                            ", "task_filter" ],
+			[ "                                           )                                                                                                  ", "task_filter" ],
+			[ "                                                                                                                                              ", "task_filter" ],
 			[ "                 ),'[]')                                                                        ", "task" ],
 			[ "         ,'task_tag_stats', COALESCE(                                                           ", "task_tag_stats" ],
 			[ "                 (SELECT json_object_agg(c.property, c.counts)                                  ", "task_tag_stats" ],

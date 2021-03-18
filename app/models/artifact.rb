@@ -1,7 +1,7 @@
 class Artifact < ActiveRecord::Base
 
-	belongs_to :task
-	belongs_to :execution
+	belongs_to :task, optional: true
+	belongs_to :execution, optional: true
 
 
 	def self.create(task: nil, execution: nil, data:)
