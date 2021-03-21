@@ -1,6 +1,6 @@
 class TaskStatusesController < ApplicationController
 
-	skip_before_filter :verify_authenticity_token, only: :create
+	skip_before_action :verify_authenticity_token, only: :create
 
 	def create
 
@@ -36,7 +36,7 @@ class TaskStatusesController < ApplicationController
 		actors = params[:actors]
 
 		#INFO: If request cannot satisfy constraint matrix, return 423 - Locked.
-		if (not params[:force]) and constraint_matrix.index([old_status,new_status]).nil?
+		if ((not params[:force]) and constraint_matrix.index([old_status,new_status]).nil?) or !constraint_matrix.find { |old,new| new == new_status }
 			render nothing: true , status: 423
 			return
 		end
@@ -49,7 +49,7 @@ class TaskStatusesController < ApplicationController
 
 					Task.where(*tasks_query).where(execution_id: execution.id).each { |task|
 						task_ids << task.id
-						task.status(true).update(current: false)
+						task.status.update(current: false)
 						task_status = TaskStatus.create!(task_id: task.id, current: true, status: new_status, worker_id: worker ? worker.id : nil)
 
 						if actors
@@ -61,7 +61,11 @@ class TaskStatusesController < ApplicationController
 						end
 						task.trigger_hooks(new_status)
 
-
+						if new_status == 'crashed' and (task.retry || 0) < 1
+							new_task = Task.find(task.duplicate)
+							new_task.retry = (task.retry || 0) + 1
+							new_task.save
+						end
 					}
 					execution.update_status(true)
 

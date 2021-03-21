@@ -43,6 +43,7 @@ EM.run {
 		scores = []
 		plans = []
 
+		tie_breaker = 0
 		worker_estimates.each_pair { |worker, estimates|
 
 			worker = worker.split(':')[1]
@@ -58,6 +59,7 @@ EM.run {
 					#print " %i"%[task_id]
 					if observation_time == "now" then iff=false; observation_time = Time.now else iff=true end
 					estimated_end_time = estimate[0].to_i + observation_time.to_i + estimate[2].to_i
+					tie_breaker += 1
 					scores << [
 						(tasks_to_deal["tasks"][task_id.to_s]["priority"] || 10).to_i*(-1),
 
@@ -67,6 +69,7 @@ EM.run {
 						estimated_end_time,
 						estimate[2].to_i,#execution duration
 						observation_time.to_i,
+						tie_breaker,
 						iff,
 						estimate[1].map{ |set| set.map { |actor| [actor,worker].join(':') } },#remote ids of designated resources
 						task_id.to_i, #task_id, needed for specifying task
@@ -88,7 +91,7 @@ EM.run {
 		better_future_exists = Set.new
 
 		p ["Current Time",Time.new].join(': ')
-		scores.sort.each { |abs_prio,transition_duration,execution_id,actor_count,eet,execution_duration,observation_time,iff,alternatives,task_id,worker|
+		scores.sort.each { |abs_prio,transition_duration,execution_id,actor_count,eet,execution_duration,observation_time,tie_breaker,iff,alternatives,task_id,worker|
 
 			if not viable_alternative = alternatives.find { |alternative|
 					 (alternative & used_resources.to_a).size == 0 }

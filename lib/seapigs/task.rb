@@ -27,6 +27,8 @@ class TaskSingle < Producer
 			requirements: task.requirement.description
 		}
 		[data, version]
+	rescue ActiveRecord::RecordNotFound
+		[{}, version]
 	end
 
 end

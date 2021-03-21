@@ -1,12 +1,12 @@
 class TaskValuesController < ApplicationController
 
-	skip_before_filter :verify_authenticity_token, only: :create
+	skip_before_action :verify_authenticity_token, only: :create
 
 	def create
 		Task.transaction {
 			task = Task.find(params[:task_id])
 			raise "Property or you are asked to leave...!" if (not params[:property]) or (params[:property].size == 0)
-			raise "Value is missing, pls gif" if (not params[:value]) or (params[:value].size == 0)
+			return render json: {}  if (not params[:value]) or (params[:value].size == 0)
 			property = Property.find_or_create_by!(name: params[:property])
 			value = Value.find_or_create_by!(property_id: property.id, value: params[:value])
 			task_value = task.task_values.where(value_id: value.id).first

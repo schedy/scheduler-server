@@ -66,9 +66,15 @@ class Executions < Producer
 			end
 		end
 
-		data = {
-			executions: Execution.detailed_summary(include: includes, conditions: conditions.join(" AND "), params: params).to_a.map { |e| e.description }
-		}
+		begin
+			data = {
+				executions: Execution.detailed_summary(include: includes, conditions: conditions.join(" AND "), params: params).to_a.map { |e| e.description }
+			}
+		rescue ActiveRecord::StatementInvalid
+			data = {
+				executions: []
+			}
+		end
 
 		[data, version]
 	end

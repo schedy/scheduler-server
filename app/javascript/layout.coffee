@@ -1,3 +1,6 @@
+if not window.extra_menu_items?
+	window.extra_menu_items = []
+
 window.Layout =
 	view: (vnode) ->
 		[
@@ -8,12 +11,14 @@ window.Layout =
 						m 'li', [ m 'a[href="?show=workers"]', style: { "color": "#DDDDDD" }, 'Workers' ]
 						m 'li', [ m 'a[href="?show=statistics"]', style: { "color": "#DDDDDD" }, 'Statistics' ]
 					m 'ul.nav.navbar-nav.navbar-right',
-						if Executioncontrol
-							m 'li', [ m 'a.execution-control-link[href="?show=executioncontrol"]', style: { "color": "#DDDDDD" }, 'Execution Control' ]
-						m 'li',
-							m 'a[href="https://github.com/schedy"]',
-								m 'small',
-									'Scheduler on Github'
+						[
+							for extra_menu_item in window.extra_menu_items
+								m 'li', [ extra_menu_item() ]
+							m 'li',
+								m 'a[href="https://github.com/schedy"]',
+									m 'small',
+										'Scheduler on Github'
+						]
 			if router.state_valid
 				m '.container-fluid',
 					m '.row',

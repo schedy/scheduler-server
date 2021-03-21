@@ -2,7 +2,7 @@ require 'shellwords'
 
 class ExecutionStatusesController < ApplicationController
 
-	skip_before_filter :verify_authenticity_token, only: [:create]
+	skip_before_action :verify_authenticity_token, only: [:create]
 
 	def create
 		execution_id = params[:execution_id]

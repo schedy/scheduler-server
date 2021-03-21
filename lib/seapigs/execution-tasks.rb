@@ -27,34 +27,33 @@ class ExecutionTasks < Producer
 		return [false, session_state_version] if states.size < 1
 
 		filter = (states[0].state["task_list_filter"] or {})
-		execution_id = states[0].state["execution_id"]
+		execution_id = (states[0].state["execution_id"] or "1").gsub(/[^0-9]/,"") #meh
 		version = SeapigDependency.versions('Execution:%010i'%[execution_id])
 
 		includes = ["task","task_filter","task_resources","task_worker","task_tags"]
 		conditions = [ "true" ]
 		params = []
 
-
-		params << filter.to_a.map { |property, values|
+		properties_to_check = []
+		properties_required = []
+		prohibited_values = []
+		filter.to_a.each { |property, values|
 			if property = Property.find_by(name: base64decode(property))
-				property.values.where(value: values.to_a.select { |value, filter_out| filter_out == 't' }.map { |value, _| base64decode(value)}).map(&:id)
-			else
-				[-1]
+				new_prohibited_values = property.values.where(value: values.to_a.select { |value, filter_out| filter_out == 't' }.map { |value, _| base64decode(value)}).map(&:id)
+				prohibited_values += new_prohibited_values
+				properties_to_check << property.id.to_i
+				properties_required << property.id.to_i    if values["LQ"] == 't'
 			end
-		}.flatten
-
-		params << filter.to_a.select { |property, values| values["LQ"] == 't' }.map { |property, values|
-			if property = Property.find_by(name: base64decode(property)) then property.id else -1 end
 		}
 
-		params << params[-1].size
+		params << properties_to_check
+		params << [-1]+prohibited_values
+		params << properties_required
 
 		conditions << "executions.id = ?"
 		params << execution_id
 
-		p params
-
-		data = Execution.detailed_summary(include: includes, conditions: conditions.join(" AND "), params: params).first.description
+		data = (Execution.detailed_summary(include: includes, conditions: conditions.join(" AND "), params: params).first&.description or {})
 
 		[data, version]
 	end
