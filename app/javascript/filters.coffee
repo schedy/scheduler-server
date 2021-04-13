@@ -3,7 +3,7 @@ window.Filters =
                 m '.container-fluid', style: { position: 'relative', "min-height": "200px", overflow: "hidden" },
                         m '.filter-header', 'filters'
                         m '.input-group',
-                                m 'input.form-control.filter-search-input',{'type':'text','placeholder':'Filter by ID', value: router.state.executions_filter["search"]}
+                                m 'input.form-control.filter-search-input',{'type':'text','placeholder':'Filter by ID or tags', value: router.state.executions_filter["search"]}
                         m 'ul#filters.list-unstyled',
                                 if execution_filters? and execution_filters.initialized
                                         grouped_tags = _.groupBy execution_filters.object.tags, (obj) -> obj.substring(0,obj.indexOf(':'))
