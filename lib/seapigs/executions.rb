@@ -35,15 +35,27 @@ class Executions < Producer
 			includes = [ "task_statuses", "tags" ]
 		end
 
+                if search_value
+                      puts "SEARCH VALUE IS:" + search_value
+                end
+
 		if creator
 			conditions << "u.nickname = ?"
 			params << creator
 		end
 
-		if search_value and (search_value.to_i > 0)
+                if search_value and (search_value.to_i > 0)
 			conditions << " (executions.id = ? OR executions.id IN (SELECT t.execution_id FROM tasks t WHERE t.id = ?)) "
 			params << search_value
 			params << search_value
+
+                elsif search_value and (search_value.length > 1)
+			search_value.split().map {|keyword|
+				conditions << "executions.id IN (select execution_values.execution_id 
+						from execution_values where execution_values.value_id IN 
+							(select values.id from values where values.value ILIKE '%' || ? || '%'))"
+				params << keyword
+			}
 		end
 
 		tags.each_pair { |property,values|
