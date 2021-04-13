@@ -35,10 +35,6 @@ class Executions < Producer
 			includes = [ "task_statuses", "tags" ]
 		end
 
-                if search_value
-                      puts "SEARCH VALUE IS:" + search_value
-                end
-
 		if creator
 			conditions << "u.nickname = ?"
 			params << creator
