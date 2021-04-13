@@ -49,6 +49,7 @@ class Executions < Producer
 			params << search_value
 			params << search_value
 
+
 		elsif search_value and (search_value.length > 1)
 			search_value.split().map {|keyword|
 				conditions << "executions.id IN (SELECT execution_values.execution_id FROM
