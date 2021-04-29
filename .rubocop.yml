@@ -10,3 +10,14 @@
 # See https://docs.rubocop.org/rubocop/configuration
 Layout/IndentationStyle:
   Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Layout/IndentationWidth:
+  Enabled: false
+Layout/SpaceAroundOperators:
+  Enabled: false
+Style/BlockDelimiters:
+  Enabled: false
+AllCops:
+   Exclude:
+     - '**/tmp/**'

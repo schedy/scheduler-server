@@ -3,7 +3,7 @@ require './config/environment.rb'
 class Tasks < Producer
 	@patterns = [ 'tasks-waiting' ]
 
-	def self.produce(seapig_object_id)
+	def self.produce(_seapig_object_id)
 
 		#ActiveRecord::Base.logger = Logger.new(STDERR)
 

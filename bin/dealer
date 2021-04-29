@@ -90,7 +90,7 @@ EM.run {
 		better_future_exists = Set.new
 
 		p ['Current Time', Time.new].join(': ')
-		scores.sort.each { |abs_prio, transition_duration, execution_id, actor_count, eet, execution_duration, observation_time, tie_breaker, iff, alternatives, task_id, worker|
+		scores.sort.each { |_abs_prio, _transition_duration, _execution_id, _actor_count, _eet, _execution_duration, observation_time, _tie_breaker, iff, alternatives, task_id, worker|
 
 			if not viable_alternative = alternatives.find { |alternative|
 					 (alternative & used_resources.to_a).size == 0 }

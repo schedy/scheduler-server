@@ -3,7 +3,7 @@ require './config/environment.rb'
 class TaskToDeal < Producer
 	@patterns = [ 'tasks-to-deal' ]
 
-	def self.produce(seapig_object_id)
+	def self.produce(_seapig_object_id)
 
 		#ActiveRecord::Base.logger = Logger.new(STDERR)
 		Task.uncached {

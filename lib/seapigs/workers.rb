@@ -3,7 +3,7 @@ require './config/environment.rb'
 class Workers < Producer
 	@patterns = [ 'workers' ]
 
-	def self.produce(seapig_object_id)
+	def self.produce(_seapig_object_id)
 
 		Worker.uncached {
 			version = SeapigDependency.versions('Worker')

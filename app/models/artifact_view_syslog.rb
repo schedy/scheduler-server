@@ -6,10 +6,10 @@ class ArtifactViewSyslog < ArtifactView
 	end
 
 	def self.views(artifact)
-		[{path: @@handle+'/annotated.html', label: 'annotated'}] if artifact.name =~ /^syslog.*$/
+		[{ path: @@handle+'/annotated.html', label: 'annotated' }] if artifact.name =~ /^syslog.*$/
 	end
 
-	def self.view(artifact, path, context)
+	def self.view(artifact, _path, context)
 		dirname = 'public/storage/cache/artifacts/%s/%09i/'%[artifact.created_at.strftime('%Y%m%d'), artifact.id]
 		filename = dirname+'/annotated.html'
 		if not Dir.exist?(dirname)

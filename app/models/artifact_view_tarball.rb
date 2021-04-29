@@ -6,7 +6,7 @@ class ArtifactViewTarball < ArtifactView
 	end
 
 	def self.views(artifact)
-		[{path: @@handle+'/index.html', label: 'index.html'}] if artifact.name =~ /.*\.tar.bz2$/
+		[{ path: @@handle+'/index.html', label: 'index.html' }] if artifact.name =~ /.*\.tar.bz2$/
 	end
 
 	def self.view(artifact, path, context)

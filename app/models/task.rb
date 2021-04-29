@@ -12,7 +12,7 @@ class Task < ActiveRecord::Base
 		return if not task_descriptions or task_descriptions.size == 0
 		raise 'Task descriptions need requirements, sry' if task_descriptions.find { |description| not description['requirements'] }
 
-		properties = Hash.new {|h, k| h[k] = Property.find_or_create_by!(name: k) }
+		properties = Hash.new { |h, k| h[k] = Property.find_or_create_by!(name: k) }
 		values = Hash.new { |h, k| h[k] = Value.find_or_create_by!(property_id: k[0] , value: k[1]) }
 
 		requirements_by_hash = task_descriptions.map { |description| [description['requirements'].hash, description['requirements']] }.to_h

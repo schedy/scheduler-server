@@ -11,7 +11,7 @@ class TaskSingle < Producer
 		data = {
 			id: task.id,
 			description: task.description,
-			artifacts: task.artifacts.group_by { |artifact| artifact.name }.map { |name, artifact_versions|
+			artifacts: task.artifacts.group_by { |artifact| artifact.name }.map { |_name, artifact_versions|
 				artifact = artifact_versions.sort_by { |artifact| artifact.created_at }[-1]
 				{
 					id: artifact.id,

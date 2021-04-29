@@ -35,7 +35,7 @@ class ExecutionTasks < Producer
 		prohibited_values = []
 		filter.to_a.each { |property, values|
 			if property = Property.find_by(name: base64decode(property))
-				new_prohibited_values = property.values.where(value: values.to_a.select { |value, filter_out| filter_out == 't' }.map { |value, _| base64decode(value)}).map(&:id)
+				new_prohibited_values = property.values.where(value: values.to_a.select { |_value, filter_out| filter_out == 't' }.map { |value, _| base64decode(value) }).map(&:id)
 				prohibited_values += new_prohibited_values
 				properties_to_check << property.id.to_i
 				properties_required << property.id.to_i    if values['LQ'] == 't'

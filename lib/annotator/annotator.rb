@@ -11,7 +11,7 @@ module Annotator
 
 	class Firewall
 		def method_missing(*_)
-			raise Exception, "Oh come on, you can't do this here! Use ->{} instead"
+			raise StandardError, "Oh come on, you can't do this here! Use ->{} instead"
 		end
 	end
 
@@ -25,7 +25,7 @@ module Annotator
 			ParentProxy.new(@parser_node_ast_parameters, @depth+1)
 		end
 
-		def method_missing(name, *args, &block)
+		def method_missing(name, *args)
 			@parser_node_ast_parameters << [@depth, name, *args]
 		end
 	end
@@ -146,7 +146,7 @@ module Annotator
 		end
 
 		def inspect
-			'<AstNode element=%s text=%s chain=%s>'%[@element, @text.ellipsis.inspect, @chain.map { |node| node.kind_of?(String) ? node.ellipsis : node}.inspect]
+			'<AstNode element=%s text=%s chain=%s>'%[@element, @text.ellipsis.inspect, @chain.map { |node| node.kind_of?(String) ? node.ellipsis : node }.inspect]
 		end
 
 		def pp(level = 0)
@@ -175,7 +175,7 @@ module Annotator
 			text
 		end
 
-		def emit(content)
+		def emit(_content)
 			raise 'Pls define your own emit'
 		end
 

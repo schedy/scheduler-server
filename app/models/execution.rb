@@ -21,7 +21,7 @@ class Execution < ActiveRecord::Base
 			execution.with_lock {
 				ExecutionStatus.create!(execution_id: execution.id, current: true, status: 'waiting')
 
-				properties = Hash.new {|h, k| h[k] = Property.find_or_create_by!(name: k) }
+				properties = Hash.new { |h, k| h[k] = Property.find_or_create_by!(name: k) }
 				values = Hash.new { |h, k| h[k] = Value.find_or_create_by!(property_id: k[0] , value: k[1]) }
 
 				Task.create_from_description(execution, data['tasks'])

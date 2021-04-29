@@ -42,6 +42,6 @@ class HtmlAstNode < Annotator::AstNode
 	end
 
 	def escape(text)
-		CGI::escapeHTML(text)
+		CGI.escapeHTML(text)
 	end
 end
