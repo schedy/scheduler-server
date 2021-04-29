@@ -24,7 +24,7 @@ class TaskStatusesController < ApplicationController
 
 		raise if not params[:task_id]
 		if params[:task_id] =~ /\d+/
-			tasks_query = [ "id = ?", params[:task_id] ]
+			tasks_query = [ 'id = ?', params[:task_id] ]
 			old_status = Task.find(params[:task_id]).status.status
 		else # no locking here yet, since we assume client has sole authority to alter resulting records
 			#tasks_query = [ "exists (select * from task_statuses ts where ts.current and ts.task_id = tasks.id and ts.worker_id = ? and ts.status = ?)", worker.id, params[:task_id] ]

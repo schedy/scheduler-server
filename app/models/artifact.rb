@@ -5,7 +5,7 @@ class Artifact < ActiveRecord::Base
 
 
 	def self.create(task: nil, execution: nil, data:)
-		raise "Artifact has to belong to some task or execution." if (not task) and (not execution)
+		raise 'Artifact has to belong to some task or execution.' if (not task) and (not execution)
 		artifact = Artifact.new
 		artifact.task = task
 		artifact.execution = execution
@@ -13,8 +13,8 @@ class Artifact < ActiveRecord::Base
 		artifact.name = data.original_filename
 		content = data.tempfile.read
 		artifact.size = content.bytesize
-		artifact.storage_handler = "ArtifactStoreFile"
-		artifact.storage_handler_data = { "compressor"=>"lz4" }
+		artifact.storage_handler = 'ArtifactStoreFile'
+		artifact.storage_handler_data = { 'compressor'=>'lz4' }
 		artifact.created_at = Time.new
 		artifact.save!
 		ArtifactStoreFile.put(artifact, content)

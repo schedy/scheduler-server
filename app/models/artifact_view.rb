@@ -18,5 +18,5 @@ class ArtifactView
 end
 
 
-Dir[Rails.root.to_s+"/app/models/artifact_view_*.rb"].each { |artifact_view| $stderr.puts "Loading: "+artifact_view; require artifact_view }
-Dir[Rails.root.to_s+"/project/models/artifact_view_*.rb"].each { |artifact_view| require artifact_view }
+Dir[Rails.root.to_s+'/app/models/artifact_view_*.rb'].each { |artifact_view| $stderr.puts 'Loading: '+artifact_view; require artifact_view }
+Dir[Rails.root.to_s+'/project/models/artifact_view_*.rb'].each { |artifact_view| require artifact_view }

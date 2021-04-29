@@ -13,7 +13,7 @@ class ResourceStatusesController < ApplicationController
 
 				#resources.each { |description|
 					worker.with_lock {
-						resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: description["id"])
+						resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: description['id'])
 						resource_status = ResourceStatus.new
 						resource_status.task_id = description[:task_id]
 						resource_status.role = description[:role]

@@ -4,7 +4,7 @@
 class String
 
 	def ellipsis
-		size < 12 ? self : self[0..5] + "..." + self[-6..-1]
+		size < 12 ? self : self[0..5] + '...' + self[-6..-1]
 		#self
 	end
 
@@ -72,7 +72,7 @@ module Annotator
 			#puts 'MM: ' + name.to_s
 			if @regexp and @regexp.names.include?(name.to_s)
 				if block_given?
-					raise "Duplicated name: "+name if @names[name]
+					raise 'Duplicated name: '+name if @names[name]
 					@names[name.to_s] = ParserNode.new(@ast_node_class, name, *args, &block)
 				else
 					ParserNode.new(@ast_node_class, name, regexp)
@@ -129,7 +129,7 @@ module Annotator
 						chain << @names[name].parse(ast_node, text[start...finish])
 						cursor = finish
 					else
-						chain << @names[name].parse(ast_node, "")
+						chain << @names[name].parse(ast_node, '')
 					end
 				}
 				chain << text[cursor...match.end(0)] if cursor < match.end(0)
@@ -198,7 +198,7 @@ module Annotator
 				else
 					node.compile
 				end
-			}.flatten.join("")
+			}.flatten.join('')
 
 			emit(content)
 		end
@@ -210,7 +210,7 @@ module Annotator
 
 
 		def emit(content)
-			raise "Pls define your own emit"
+			raise 'Pls define your own emit'
 		end
 
 
@@ -228,9 +228,9 @@ module Annotator
 
 	class Parser
 
-		def initialize(ast_node_class, program, program_file = "AnnotatorProgram")
+		def initialize(ast_node_class, program, program_file = 'AnnotatorProgram')
 			@root_parser_node = ParserNode.new(ast_node_class, :root, nil) {
-				binding.eval(program.force_encoding("UTF-8"), program_file)
+				binding.eval(program.force_encoding('UTF-8'), program_file)
 			}
 		end
 

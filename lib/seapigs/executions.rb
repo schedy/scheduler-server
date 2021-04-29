@@ -8,40 +8,40 @@ class Executions < Producer
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /executions-(.*)filtered-([^:]+):(.*)/
-		stats = ($1 == "stats-")
+		stats = ($1 == 'stats-')
 		session_id = $2
 		state_id = $3
 		version = SeapigDependency.versions('Execution','Task')
-		session_state_version = SeapigDependency.versions("SeapigRouter::Session::"+session_id)
+		session_state_version = SeapigDependency.versions('SeapigRouter::Session::'+session_id)
 		sessions = SeapigRouterSession.where(key: session_id)
-		return [false, version.merge(session_state_version).merge("Postgres::magic"=>0)] if sessions.size < 1
+		return [false, version.merge(session_state_version).merge('Postgres::magic'=>0)] if sessions.size < 1
 		states = SeapigRouterSessionState.where(seapig_router_session_id: sessions[0]).where(state_id: state_id)
-		return [false, version.merge(session_state_version).merge("Postgres::magic"=>0)] if states.size < 1
+		return [false, version.merge(session_state_version).merge('Postgres::magic'=>0)] if states.size < 1
 
-		filter = (states[0].state["executions_filter"] or {})
-		creator = filter["creator"]
-		limit = (filter["limit"] or 50)
-		search_value = filter["search"]
+		filter = (states[0].state['executions_filter'] or {})
+		creator = filter['creator']
+		limit = (filter['limit'] or 50)
+		search_value = filter['search']
 		tags = {}
-		(filter["tags"] or []).each { |tag|
-			property,value = tag.split(":",2)
+		(filter['tags'] or []).each { |tag|
+			property,value = tag.split(':',2)
 			(tags[property] ||= []) << value
 		}
 
-		conditions = [ "true" ]
+		conditions = [ 'true' ]
 		params = []
 		includes = []
 		if not stats
-			includes = [ "task_statuses", "tags" ]
+			includes = [ 'task_statuses', 'tags' ]
 		end
 
 		if creator
-			conditions << "u.nickname = ?"
+			conditions << 'u.nickname = ?'
 			params << creator
 		end
 
 		if search_value and (search_value.to_i > 0)
-			conditions << " (executions.id = ? OR executions.id IN (SELECT t.execution_id FROM tasks t WHERE t.id = ?)) "
+			conditions << ' (executions.id = ? OR executions.id IN (SELECT t.execution_id FROM tasks t WHERE t.id = ?)) '
 			params << search_value
 			params << search_value
 
@@ -70,7 +70,7 @@ class Executions < Producer
 		}
 
 		if limit
-			includes << "limit"
+			includes << 'limit'
 			if stats
 				params << 1000
 			else
@@ -80,7 +80,7 @@ class Executions < Producer
 
 		begin
 			data = {
-				executions: Execution.detailed_summary(include: includes, conditions: conditions.join(" AND "), params: params).to_a.map { |e| e.description }
+				executions: Execution.detailed_summary(include: includes, conditions: conditions.join(' AND '), params: params).to_a.map { |e| e.description }
 			}
 		rescue ActiveRecord::StatementInvalid
 			data = {

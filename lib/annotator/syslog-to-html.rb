@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
-require_relative "annotator.rb"
-require_relative "html-ast-node.rb"
+require_relative 'annotator.rb'
+require_relative 'html-ast-node.rb'
 
 
 
@@ -23,7 +23,7 @@ class SyslogHtmlAstNode < HtmlAstNode
 
 
 	def self.tag_value_class(tag, value)
-		"tag-"+tag.html_class_name+"-"+value.html_class_name
+		'tag-'+tag.html_class_name+'-'+value.html_class_name
 	end
 
 end
@@ -72,20 +72,20 @@ attributes = ast.tags.to_a.map { |attribute, values|
 }.sort_by { |attribute| attribute[:name] }
 
 attributes << {
-	name: "columns",
+	name: 'columns',
 	values: [
-		{ name: "timestamp", class: "column-timestamp" },
-		{ name: "loglevel", class: "column-loglevel" },
-		{ name: "process", class: "column-process" },
-		{ name: "file", class: "column-file" },
-		{ name: "source", class: "column-source" },
-		{ name: "message", class: "column-message" }
+		{ name: 'timestamp', class: 'column-timestamp' },
+		{ name: 'loglevel', class: 'column-loglevel' },
+		{ name: 'process', class: 'column-process' },
+		{ name: 'file', class: 'column-file' },
+		{ name: 'source', class: 'column-source' },
+		{ name: 'message', class: 'column-message' }
 	]
 }
 
-script = coffee("lib/annotator/syslog.coffee.erb", binding)
-style = sass("lib/annotator/syslog.css.sass.erb", binding)
-html = erb("lib/annotator/syslog.html.erb", binding)
+script = coffee('lib/annotator/syslog.coffee.erb', binding)
+style = sass('lib/annotator/syslog.css.sass.erb', binding)
+html = erb('lib/annotator/syslog.html.erb', binding)
 puts html
 
 #$stderr.puts ast.pp

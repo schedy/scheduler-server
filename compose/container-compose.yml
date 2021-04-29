@@ -23,8 +23,6 @@ services:
     container_name: schedy-pg
     ports:
       - "5432:5432"
-    volumes:
-      - "/data"
 
   seapig-server:
     image: schedy-server-devel

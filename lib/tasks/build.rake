@@ -1,7 +1,7 @@
 namespace :build do
 
-	desc "Build scheduler server tarball"
-	task tarball: "assets:precompile" do
+	desc 'Build scheduler server tarball'
+	task tarball: 'assets:precompile' do
 		sh 'unset RUBYOPT; bundle package --all'
 		FileUtils.mkdir_p 'deploy/build'
 		FileUtils.rm 'deploy/scheduler-server.tar.bz2' if File.exists?('deploy/scheduler-server.tar.bz2')

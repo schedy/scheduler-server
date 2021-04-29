@@ -18,7 +18,7 @@ class TaskToEstimate < Producer
 					) as x;"
 				)[0].summary
 			
-			Task.connection.execute("DROP TABLE pg_planner_go_home_you_re_drunk")
+			Task.connection.execute('DROP TABLE pg_planner_go_home_you_re_drunk')
 			[data, version]
 		}
 	end

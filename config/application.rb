@@ -1,6 +1,6 @@
-require_relative "boot"
+require_relative 'boot'
 
-require "rails/all"
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -36,7 +36,7 @@ module Scheduler
     config.assets.initialize_on_precompile = false
     
 #    config.active_record.raise_in_transactional_callbacks = true
-    config.assets.paths << Rails.root.join("vendor","assets","fonts")
+    config.assets.paths << Rails.root.join('vendor','assets','fonts')
     config.assets.paths << "#{Rails.root}/project/public"
   end
 end
