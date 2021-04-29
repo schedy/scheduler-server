@@ -32,7 +32,7 @@ COPY db/     ./db/
 COPY lib/    ./lib/
 COPY public/ ./public/
 COPY config.ru  ./
-COPY config/database.yml.devel-compose config/database.yml
+RUN mv config/database.yml.devel-compose config/database.yml
 ENTRYPOINT ["bundle", "exec"]
 
 
@@ -47,6 +47,7 @@ COPY lib/    ./lib/
 COPY public/ ./public/
 COPY Gemfile Gemfile.lock Rakefile config.ru  ./
 RUN gem install bundler:1.13.7
+RUN mv config/database.yml.devel-compose config/database.yml
 COPY --from=build /schedy-server/vendor/ /schedy-server/vendor/
 COPY --from=build /schedy-server/.bundle/ /schedy-server/.bundle/
 COPY --from=build /schedy-server/public/assets/ /schedy-server/public/assets/

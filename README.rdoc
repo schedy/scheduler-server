@@ -1,18 +1,56 @@
-== README
+# Scheduler Server
 
-SCHEDULER-SERVER
+![](schedy.png)
 
-dnf install postgresql-devel nginx postgresql-server postgresql-contrib
+Scheduler is an application for distributed task execution.
 
-to nginx.conf:server add:
-        location /seapig/ {
-                proxy_pass http://localhost:3001;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade $http_upgrade;
-                proxy_set_header Connection "upgrade";
-        }
+## Built With
 
-systemctl start nginx
+- [Rails](https://rubyonrails.org/)
+- [mithril.js](https://mithril.js.org/)
+- [Bootstrap](https://getbootstrap.com/)
+- [Seapig/Hyperpig](https://github.com/yunta-mb/seapig-server)
 
-bundle install
 
+## Development Setup
+
+### Prerequisites
+#### Fedora 30+
+
+
+```
+dnf install podman-compose
+```
+
+#### Deployment
+
+scheduler-server should be available at [https://localhost:8000](https://localhost:8000) after containers are running.
+
+```bash
+git clone https://github.com/schedy/scheduler-server &&\
+cd scheduler-server &&\
+podman-compose -f compose/container-compose.yml build &&\
+podman-compose -f compose/container-compose.yml up
+```
+
+
+## Testing
+
+```ruby
+rspec
+```
+
+## Roadmap
+
+- world conquest
+
+##
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)

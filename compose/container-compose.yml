@@ -1,6 +1,11 @@
 services:
   schedy-nginx:
     image: schedy-nginx
+    build:
+      context: ../
+      dockerfile: ./compose/nginx/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-nginx
     ports:
       - "8000:8000"
@@ -10,6 +15,11 @@ services:
 
   database:
     image: schedy-postgres
+    build:
+      context: ../
+      dockerfile: ./compose/postgres/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-pg
     ports:
       - "5432:5432"
@@ -19,6 +29,11 @@ services:
   seapig-server:
     image: schedy-server-devel
     container_name: schedy-seapig-server
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     command: seapig-server --disable-json-diff
     ports:
       - "3001:3001"
@@ -28,6 +43,11 @@ services:
 
   seapig-worker:
     image: schedy-server-devel
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     environment:
       RAILS_ENV=production
     command: seapig-worker
@@ -43,6 +63,11 @@ services:
 
   schedy-router:
     image: schedy-server-devel
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-router
     command: seapig-router-session-manager
     depends_on:
@@ -51,6 +76,11 @@ services:
 
   schedy-status-saver:
     image: schedy-server-devel
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-status-saver
     command: ruby bin/worker-status-saver http://127.0.0.1:3001/seapig
     depends_on:
@@ -59,6 +89,11 @@ services:
 
   seapig-notifier:
     image: schedy-server-devel
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-seapig-notifier
     command: seapig-postgresql-notifier
     depends_on:
@@ -67,6 +102,11 @@ services:
 
   schedy-dealer:
     image: schedy-server-devel
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-dealer
     command: ruby bin/dealer http://127.0.0.1:3001/seapig http://127.0.0.1:3000/
     depends_on:
@@ -75,6 +115,11 @@ services:
 
   rails:
     image: schedy-server-devel
+    build:
+      context: ../
+      dockerfile: ./compose/server/Dockerfile
+    args:
+      buildno: 1
     container_name: schedy-server-rails
     environment:
       RAILS_ENV: production
