@@ -1,9 +1,7 @@
 require './config/environment.rb'
 
 class ExecutionTimeline < Producer
-
 	@patterns = [ 'execution-timeline:*' ]
-
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /execution-timeline:(\d+)/
@@ -12,5 +10,4 @@ class ExecutionTimeline < Producer
 		data = Execution.detailed_summary(include: ['task', 'timeline'], conditions: 'executions.id = ?', params: [id]).first.description
 		[data, version]
 	end
-
 end

@@ -2,9 +2,7 @@ require 'shellwords'
 require 'open3'
 
 class ExecutionsController < ApplicationController
-
 	skip_before_action :verify_authenticity_token, only: [:create, :duplicate]
-
 
 	def create
 		execution_description = nil
@@ -36,7 +34,6 @@ class ExecutionsController < ApplicationController
 		render json: summary
 	end
 
-
 	def show
 		execution = Execution.find(params[:id])
 		summary = Execution.detailed_summary(include: ['task', 'task_details', 'task_artifacts', 'artifacts', 'tags', 'task_tags'], conditions: 'executions.id = ?', params: [execution.id]).first.description
@@ -45,12 +42,10 @@ class ExecutionsController < ApplicationController
 		}
 	end
 
-
 	def duplicate
 		execution_id = params[:id]
 		original_execution = Execution.find(execution_id)
 		duplicate_execution = original_execution.duplicate_with_tasks
 		render json: duplicate_execution
 	end
-
 end

@@ -1,5 +1,4 @@
 class Task < ActiveRecord::Base
-
 	belongs_to :execution
 	has_many :task_statuses
 	has_one :status, ->{ where current: true }, class_name: 'TaskStatus'
@@ -8,7 +7,6 @@ class Task < ActiveRecord::Base
 	has_many :resource_statuses
 	has_many :task_hooks
 	belongs_to :requirement
-
 
 	def self.create_from_description(execution, task_descriptions)
 		return if not task_descriptions or task_descriptions.size == 0
@@ -70,5 +68,4 @@ class Task < ActiveRecord::Base
 	def duplicate
 		Task.create_from_description(self.execution, [self.description.merge('requirements' => self.requirement.description)])[0]
 	end
-
 end

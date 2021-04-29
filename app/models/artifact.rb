@@ -1,8 +1,6 @@
 class Artifact < ActiveRecord::Base
-
 	belongs_to :task, optional: true
 	belongs_to :execution, optional: true
-
 
 	def self.create(task: nil, execution: nil, data:)
 		raise 'Artifact has to belong to some task or execution.' if (not task) and (not execution)
@@ -22,7 +20,6 @@ class Artifact < ActiveRecord::Base
 		artifact
 	end
 
-
 	def send_data(context, path)
 		if (not path) or path.count('/') == 0
 			context.send_data self.data, type: mimetype, disposition: 'inline'
@@ -40,5 +37,4 @@ class Artifact < ActiveRecord::Base
 		return false if not self.storage_handler
 		ArtifactStore.store(self.storage_handler).respond_to?(:get)
 	end
-
 end

@@ -1,7 +1,6 @@
 require './config/environment.rb'
 
 class Executions < Producer
-
 	@patterns = [ 'executions-*filtered-*:*' ]
 
 	#ActiveRecord::Base.logger = Logger.new(STDERR)
@@ -44,7 +43,6 @@ class Executions < Producer
 			conditions << ' (executions.id = ? OR executions.id IN (SELECT t.execution_id FROM tasks t WHERE t.id = ?)) '
 			params << search_value
 			params << search_value
-
 
 		elsif search_value and (search_value.length > 1)
 			search_value.split().map {|keyword|
@@ -90,5 +88,4 @@ class Executions < Producer
 
 		[data, version]
 	end
-
 end

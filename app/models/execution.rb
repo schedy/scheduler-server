@@ -1,6 +1,5 @@
 
 class Execution < ActiveRecord::Base
-
 	has_many :tasks
 	has_many :execution_statuses
 	has_one :status, ->{ where current: true }, class_name: 'ExecutionStatus'
@@ -8,7 +7,6 @@ class Execution < ActiveRecord::Base
 	has_many :execution_values
 	has_many :execution_hooks
 	has_many :artifacts
-
 
 	def self.create_with_tasks(data)
 		execution = nil
@@ -54,7 +52,6 @@ class Execution < ActiveRecord::Base
 		execution
 	end
 
-
 	def duplicate_with_tasks
 		duplicate_execution = self.dup
 		self.transaction {
@@ -83,7 +80,6 @@ class Execution < ActiveRecord::Base
 		SeapigDependency.bump('Execution', 'Task', 'Task:waiting', 'Execution:%010i'%[duplicate_execution.id])
 		duplicate_execution
 	end
-
 
 	def self.detailed_summary(options = {})
 		query = [
@@ -248,13 +244,11 @@ class Execution < ActiveRecord::Base
 		Execution.find_by_sql([query]+(options[:params] or []))
 	end
 
-
 	def trigger_hooks(status)
 		self.execution_hooks.where(status: status).each { |hook|
 			`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1 &`  #FIXME: vailidate, escape, etc.
 		}
 	end
-
 
 	def update_status(is_locked)
 		update = lambda {

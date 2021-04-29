@@ -1,9 +1,7 @@
 require './config/environment.rb'
 
 class TaskSingle < Producer
-
 	@patterns = [ 'task-*' ]
-
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /task-(\d+)/
@@ -30,5 +28,4 @@ class TaskSingle < Producer
 	rescue ActiveRecord::RecordNotFound
 		[{}, version]
 	end
-
 end

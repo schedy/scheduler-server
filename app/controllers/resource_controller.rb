@@ -1,5 +1,4 @@
 class ResourceController < ApplicationController
-
 	skip_before_action  :verify_authenticity_token, only: :index
 
 	def index
@@ -22,5 +21,4 @@ class ResourceController < ApplicationController
 			render json: resource_statuses.to_json
 		}
 	end
-
 end

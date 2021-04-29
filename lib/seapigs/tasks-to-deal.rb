@@ -1,7 +1,6 @@
 require './config/environment.rb'
 
 class TaskToDeal < Producer
-
 	@patterns = [ 'tasks-to-deal' ]
 
 	def self.produce(seapig_object_id)
@@ -26,5 +25,4 @@ class TaskToDeal < Producer
 			[data, version]
 		}
 	end
-
 end

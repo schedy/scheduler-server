@@ -1,5 +1,4 @@
 class TaskStatusesController < ApplicationController
-
 	skip_before_action :verify_authenticity_token, only: :create
 
 	def create
@@ -71,8 +70,6 @@ class TaskStatusesController < ApplicationController
 
 				}
 
-
-
 			}
 		}
 
@@ -83,5 +80,4 @@ class TaskStatusesController < ApplicationController
 		render json: { seapig_dependency_versions: seapig_dependency_versions, tasks: task_ids }
 
 	end
-
 end

@@ -1,5 +1,4 @@
 class TaskValuesController < ApplicationController
-
 	skip_before_action :verify_authenticity_token, only: :create
 
 	def create
@@ -16,5 +15,4 @@ class TaskValuesController < ApplicationController
 			render json: { id: task_value.id }
 		}
 	end
-
 end

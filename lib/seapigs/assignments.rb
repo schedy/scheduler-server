@@ -1,7 +1,6 @@
 require './config/environment.rb'
 
 class Assignments < Producer
-
 	@patterns = [ 'assignments:*' ]
 
 	def self.produce(seapig_object_id)
@@ -21,5 +20,4 @@ class Assignments < Producer
 		}
 
 	end
-
 end

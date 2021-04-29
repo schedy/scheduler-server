@@ -4,8 +4,6 @@ require './config/environment.rb'
 
 require 'seapig-client'
 
-
-
 EM.run {
 
 	SeapigClient.new(ARGV[0], name: 'worker-status-saver').slave('worker-status-*').onchange { |status|

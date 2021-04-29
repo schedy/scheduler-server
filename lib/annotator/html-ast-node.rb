@@ -1,17 +1,12 @@
 require 'cgi'
 
 class String
-
 	def html_class_name
 		gsub(/[^A-Za-z0-9]/, '_').gsub(/^[^A-Za-z]/, '_')
 	end
-
 end
 
-
-
 class HtmlAstNode < Annotator::AstNode
-
 	attr_reader :tags
 	dsl_value_writer :element, :title, :id, :html
 
@@ -21,16 +16,13 @@ class HtmlAstNode < Annotator::AstNode
 		super
 	end
 
-
 	def klass(k)
 		@classes << k
 	end
 
-
 	def attribute(attribute, value)
 		@attributes << [attribute, value]
 	end
-
 
 	def emit(content)
 		content = @html if @html
@@ -49,10 +41,7 @@ class HtmlAstNode < Annotator::AstNode
 		end
 	end
 
-
 	def escape(text)
 		CGI::escapeHTML(text)
 	end
-
-
 end

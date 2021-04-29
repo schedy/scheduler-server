@@ -1,7 +1,6 @@
 require './config/environment.rb'
 
 class TaskToEstimate < Producer
-
 	@patterns = [ 'tasks-to-estimate' ]
 
 	def self.produce(seapig_object_id)
@@ -22,7 +21,6 @@ class TaskToEstimate < Producer
 			[data, version]
 		}
 	end
-
 end
 
 #					"with tids as

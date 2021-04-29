@@ -1,5 +1,4 @@
 class ArtifactsController < ApplicationController
-
 	skip_before_action :verify_authenticity_token, only: :create
 
 	def create
@@ -11,7 +10,6 @@ class ArtifactsController < ApplicationController
 		render json: { id: artifact.id }
 	end
 
-
 	def show
 		artifact = if params[:task_id]
 			Task.find(params[:task_id]).artifacts.where(name: params[:path].split('/')[0]).order('created_at DESC').first
@@ -20,5 +18,4 @@ class ArtifactsController < ApplicationController
 		end
 		artifact.send_data(self, params['path'].split('/', 2)[1])
 	end
-
 end

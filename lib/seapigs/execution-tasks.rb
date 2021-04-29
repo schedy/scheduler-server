@@ -6,14 +6,10 @@ def base64decode(text)
 	URI.decode_www_form_component(Base64.decode64(text))
 end
 
-
 class ExecutionTasks < Producer
-
 	@patterns = [ 'execution-tasks-filtered-*:*' ]
 
 	#ActiveRecord::Base.logger = Logger.new(STDERR)
-
-
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /execution-tasks-filtered-([^:]+):(.*)/
@@ -57,5 +53,4 @@ class ExecutionTasks < Producer
 
 		[data, version]
 	end
-
 end

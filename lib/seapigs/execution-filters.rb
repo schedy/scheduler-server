@@ -1,9 +1,7 @@
 require './config/environment.rb'
 
 class ExecutionFilters < Producer
-
 	@patterns = [ 'execution-filters' ]
-
 
 	def self.produce(seapig_object_id)
 		version = SeapigDependency.versions('Execution')
@@ -15,5 +13,4 @@ class ExecutionFilters < Producer
 		}
 		[data, version]
 	end
-
 end

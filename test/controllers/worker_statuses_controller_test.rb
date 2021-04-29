@@ -5,5 +5,4 @@ class WorkerStatusesControllerTest < ActionController::TestCase
     get :create
     assert_response :success
   end
-
 end

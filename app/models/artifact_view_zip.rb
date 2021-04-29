@@ -1,17 +1,13 @@
 class ArtifactViewZip < ArtifactView
-
 	@@handle = 'zip'
-
 
 	def self.handles?(handle)
 		@@handle == handle
 	end
 
-
 	def self.views(artifact)
 		[{ path: @@handle + '/index.html', label: 'index.html' }] if artifact.name =~ /.*\.zip$/
 	end
-
 
 	def self.view(artifact, path, context)
 		dirname = 'public/storage/cache/artifacts/%s/%09i/'%[artifact.created_at.strftime('%Y%m%d'), artifact.id]
@@ -24,5 +20,4 @@ class ArtifactViewZip < ArtifactView
 		end
 		context.send_file(filename, type: (MIME::Types.type_for(filename).first || 'text/plain'), disposition: 'inline')
 	end
-
 end

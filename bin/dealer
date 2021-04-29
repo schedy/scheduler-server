@@ -11,7 +11,6 @@ $stdout.sync = 1
 EM.run {
 	seapig_client = SeapigClient.new(ARGV[0], name: 'dealer')
 
-
 	tasks_to_deal = seapig_client.slave('tasks-to-deal')
 	#tasks_to_assign = seapig_client.slave('tasks-to-estimate')
 	worker_estimates = seapig_client.slave('estimates:*')
@@ -103,7 +102,6 @@ EM.run {
 				#p [task_id,"---- assigned_tasks include",task_id].join(': ');
 				next
 			end
-
 
 			if (iff)
 				if (observation_time.to_i > Time.now.to_f)

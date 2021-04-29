@@ -1,5 +1,4 @@
 class ArtifactStoreFile < ArtifactStore
-
 	def self.directory(artifact, volume)
 		if artifact.execution_id
 			Rails.root.to_s+'/public/storage/artifacts/'+volume+'/'+artifact.created_at.strftime('%Y-%m-%d')+'/'+artifact.execution_id.to_s+'-'
@@ -8,11 +7,9 @@ class ArtifactStoreFile < ArtifactStore
 		end
 	end
 
-
 	def self.name(artifact)
 		artifact.id.to_s+'_'+artifact.name.gsub(/[^a-zA-Z0-9\-\.]/, '_')
 	end
-
 
 	def self.put(artifact, data)
 		FileUtils.mkdir_p(directory(artifact, 'current'))
@@ -23,7 +20,6 @@ class ArtifactStoreFile < ArtifactStore
 			open(directory(artifact, 'current')+'/'+name(artifact), 'w', encoding: 'ascii-8bit') { |file| file.write(data) }
 		end
 	end
-
 
 	def self.locate_file(artifact, basename)
 		# probably correct version
@@ -58,7 +54,6 @@ class ArtifactStoreFile < ArtifactStore
 		raise 'File not found: %s'%[basename]
 	end
 
-
 	def self.get(artifact)
 		case (artifact.storage_handler_data or {})['compressor']
 		when 'lz4'
@@ -67,5 +62,4 @@ class ArtifactStoreFile < ArtifactStore
 			open(locate_file(artifact, name(artifact)), encoding: 'ascii-8bit') { |file| file.read }
 		end
 	end
-
 end
