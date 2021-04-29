@@ -5,19 +5,19 @@ class TaskStatusesController < ApplicationController
 	def create
 
 		constraint_matrix = [
-			[ 'waiting','assigned' ],
-			[ 'assigned','assigned' ],
-			[ 'assigned','accepted' ],
-			[ 'accepted','waiting' ],
-			[ 'accepted','transition' ],
-			[ 'transition','crashed' ],
-			[ 'transition','failed' ],
-			[ 'transition','timeout' ],
-			[ 'transition','started' ],
-			[ 'started','crashed' ],
-			[ 'started','failed' ],
-			[ 'started','timeout' ],
-			[ 'started','finished' ]
+			[ 'waiting', 'assigned' ],
+			[ 'assigned', 'assigned' ],
+			[ 'assigned', 'accepted' ],
+			[ 'accepted', 'waiting' ],
+			[ 'accepted', 'transition' ],
+			[ 'transition', 'crashed' ],
+			[ 'transition', 'failed' ],
+			[ 'transition', 'timeout' ],
+			[ 'transition', 'started' ],
+			[ 'started', 'crashed' ],
+			[ 'started', 'failed' ],
+			[ 'started', 'timeout' ],
+			[ 'started', 'finished' ]
 		]
 
 		worker = Worker.find_or_create_by(name: (params[:worker] or params[:worker_id])) if params[:worker] or params[:worker_id]
@@ -36,7 +36,7 @@ class TaskStatusesController < ApplicationController
 		actors = params[:actors]
 
 		#INFO: If request cannot satisfy constraint matrix, return 423 - Locked.
-		if ((not params[:force]) and constraint_matrix.index([old_status,new_status]).nil?) or !constraint_matrix.find { |old,new| new == new_status }
+		if ((not params[:force]) and constraint_matrix.index([old_status, new_status]).nil?) or !constraint_matrix.find { |old, new| new == new_status }
 			render nothing: true , status: 423
 			return
 		end
