@@ -27,7 +27,7 @@ class Artifact < ActiveRecord::Base
 		if (not path) or path.count('/') == 0
 			context.send_data self.data, type: mimetype, disposition: 'inline'
 		else
-			handle, subpath = path.split('/',2)
+			handle, subpath = path.split('/', 2)
 			ArtifactView.view(handle, self, subpath, context)
 		end
 	end

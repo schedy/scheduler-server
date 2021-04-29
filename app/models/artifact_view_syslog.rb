@@ -13,11 +13,11 @@ class ArtifactViewSyslog < ArtifactView
 
 
 	def self.view(artifact, path, context)
-		dirname = 'public/storage/cache/artifacts/%s/%09i/'%[artifact.created_at.strftime('%Y%m%d'),artifact.id]
+		dirname = 'public/storage/cache/artifacts/%s/%09i/'%[artifact.created_at.strftime('%Y%m%d'), artifact.id]
 		filename = dirname+'/annotated.html'
 		if not Dir.exist?(dirname)
 			FileUtils.mkdir_p(dirname)
-			open("| bundle exec ruby lib/annotator/syslog-to-html.rb lib/annotator/syslog.rb 'Task##{artifact.task.id} Artifact##{artifact.id} #{artifact.name}' >'#{filename}'",'w') { |annotator|
+			open("| bundle exec ruby lib/annotator/syslog-to-html.rb lib/annotator/syslog.rb 'Task##{artifact.task.id} Artifact##{artifact.id} #{artifact.name}' >'#{filename}'", 'w') { |annotator|
 				annotator.write(artifact.data.force_encoding('UTF-8'))
 			}
 		end

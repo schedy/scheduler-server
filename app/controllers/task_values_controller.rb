@@ -11,7 +11,7 @@ class TaskValuesController < ApplicationController
 			value = Value.find_or_create_by!(property_id: property.id, value: params[:value])
 			task_value = task.task_values.where(value_id: value.id).first
 			task_value = TaskValue.create!(task_id: task.id, value_id: value.id, property_id: property.id) if not task_value
-			SeapigDependency.bump('TaskValue','Execution:%010i'%[task.execution_id])
+			SeapigDependency.bump('TaskValue', 'Execution:%010i'%[task.execution_id])
 
 			render json: { id: task_value.id }
 		}

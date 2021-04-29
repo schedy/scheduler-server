@@ -10,7 +10,7 @@ class ArtifactStoreFile < ArtifactStore
 
 
 	def self.name(artifact)
-		artifact.id.to_s+'_'+artifact.name.gsub(/[^a-zA-Z0-9\-\.]/,'_')
+		artifact.id.to_s+'_'+artifact.name.gsub(/[^a-zA-Z0-9\-\.]/, '_')
 	end
 
 

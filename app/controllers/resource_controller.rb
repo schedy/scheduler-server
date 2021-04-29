@@ -6,7 +6,7 @@ class ResourceController < ApplicationController
 		Resource.all
 		ResourceStatus.transaction {
 			resource_statuses = params[:statuses]
-			resource_statuses.each { |worker_name,resources|
+			resource_statuses.each { |worker_name, resources|
 				worker = Worker.find_or_create_by(name: worker_name)
 				resources.each { |resource_id, description|
 					resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: resource_id)

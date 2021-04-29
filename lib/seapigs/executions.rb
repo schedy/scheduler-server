@@ -11,7 +11,7 @@ class Executions < Producer
 		stats = ($1 == 'stats-')
 		session_id = $2
 		state_id = $3
-		version = SeapigDependency.versions('Execution','Task')
+		version = SeapigDependency.versions('Execution', 'Task')
 		session_state_version = SeapigDependency.versions('SeapigRouter::Session::'+session_id)
 		sessions = SeapigRouterSession.where(key: session_id)
 		return [false, version.merge(session_state_version).merge('Postgres::magic'=>0)] if sessions.size < 1
@@ -24,7 +24,7 @@ class Executions < Producer
 		search_value = filter['search']
 		tags = {}
 		(filter['tags'] or []).each { |tag|
-			property,value = tag.split(':',2)
+			property, value = tag.split(':', 2)
 			(tags[property] ||= []) << value
 		}
 
@@ -58,7 +58,7 @@ class Executions < Producer
 			}
 		end
 
-		tags.each_pair { |property,values|
+		tags.each_pair { |property, values|
 			conditions << "EXISTS ( SELECT * FROM execution_values ev
 			        WHERE ev.execution_id = executions.id AND
 			              ev.value_id IN (SELECT v.id FROM properties p, values v

@@ -8,7 +8,7 @@ require 'seapig-client'
 
 EM.run {
 
-	SeapigClient.new(ARGV[0],name: 'worker-status-saver').slave('worker-status-*').onchange { |status|
+	SeapigClient.new(ARGV[0], name: 'worker-status-saver').slave('worker-status-*').onchange { |status|
 		next if status.destroyed
 		worker_object_id = status.id
 		worker = Worker.find_or_create_by(name: worker_object_id.split('-')[2])

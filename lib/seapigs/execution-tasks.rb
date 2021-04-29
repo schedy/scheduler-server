@@ -27,10 +27,10 @@ class ExecutionTasks < Producer
 		return [false, session_state_version] if states.size < 1
 
 		filter = (states[0].state['task_list_filter'] or {})
-		execution_id = (states[0].state['execution_id'] or '1').gsub(/[^0-9]/,'') #meh
+		execution_id = (states[0].state['execution_id'] or '1').gsub(/[^0-9]/, '') #meh
 		version = SeapigDependency.versions('Execution:%010i'%[execution_id])
 
-		includes = ['task','task_filter','task_resources','task_worker','task_tags']
+		includes = ['task', 'task_filter', 'task_resources', 'task_worker', 'task_tags']
 		conditions = [ 'true' ]
 		params = []
 

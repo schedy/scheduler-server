@@ -23,8 +23,8 @@ class Execution < ActiveRecord::Base
 			execution.with_lock {
 				ExecutionStatus.create!(execution_id: execution.id, current: true, status: 'waiting')
 
-				properties = Hash.new {|h,k| h[k] = Property.find_or_create_by!(name: k) }
-				values = Hash.new { |h,k| h[k] = Value.find_or_create_by!(property_id: k[0] , value: k[1]) }
+				properties = Hash.new {|h, k| h[k] = Property.find_or_create_by!(name: k) }
+				values = Hash.new { |h, k| h[k] = Value.find_or_create_by!(property_id: k[0] , value: k[1]) }
 
 				Task.create_from_description(execution, data['tasks'])
 
@@ -37,7 +37,7 @@ class Execution < ActiveRecord::Base
 				}
 
 				#TODO: this is horrible, it has to go
-				hooks = if data['hooks'].is_a?(String) then JSON.parse(data['hooks'].gsub('\\','').gsub('=>',':')) else data['hooks'] end
+				hooks = if data['hooks'].is_a?(String) then JSON.parse(data['hooks'].gsub('\\', '').gsub('=>', ':')) else data['hooks'] end
 
 				(hooks or {}).each_pair { |status, executables|
 					executables.each { |executable|
@@ -45,7 +45,7 @@ class Execution < ActiveRecord::Base
 					}
 				}
 
-				SeapigDependency.bump('Execution','Task','Task:waiting','Execution:%010i'%[execution.id])
+				SeapigDependency.bump('Execution', 'Task', 'Task:waiting', 'Execution:%010i'%[execution.id])
 			}
 
 			execution.trigger_hooks('waiting')
@@ -80,7 +80,7 @@ class Execution < ActiveRecord::Base
 				duplicate_execution.update_status(true)
 			}
 		}
-		SeapigDependency.bump('Execution','Task','Task:waiting','Execution:%010i'%[duplicate_execution.id])
+		SeapigDependency.bump('Execution', 'Task', 'Task:waiting', 'Execution:%010i'%[duplicate_execution.id])
 		duplicate_execution
 	end
 
@@ -258,8 +258,8 @@ class Execution < ActiveRecord::Base
 
 	def update_status(is_locked)
 		update = lambda {
-			started = ((Task.joins('LEFT JOIN task_statuses ON task_statuses.task_id = tasks.id').where("tasks.execution_id = ? AND task_statuses.current AND NOT task_statuses.status = 'waiting'",id).count or 0) > 0)
-			all_done = ((Task.joins('LEFT JOIN task_statuses ON task_statuses.task_id = tasks.id').where("tasks.execution_id = ? AND task_statuses.current AND NOT task_statuses.status IN ('finished','crashed','aborted','cancelled','failed','timeout')",id).count or 0) == 0)
+			started = ((Task.joins('LEFT JOIN task_statuses ON task_statuses.task_id = tasks.id').where("tasks.execution_id = ? AND task_statuses.current AND NOT task_statuses.status = 'waiting'", id).count or 0) > 0)
+			all_done = ((Task.joins('LEFT JOIN task_statuses ON task_statuses.task_id = tasks.id').where("tasks.execution_id = ? AND task_statuses.current AND NOT task_statuses.status IN ('finished','crashed','aborted','cancelled','failed','timeout')", id).count or 0) == 0)
 			new_status = {
 				# started,   all done,	   execution status
 				[   false,	false ] => 'waiting',

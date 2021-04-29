@@ -18,7 +18,7 @@ class ArtifactsController < ApplicationController
 		elsif params[:execution_id]
 			Execution.find(params[:execution_id]).artifacts.where(name: params[:path].split('/')[0]).order('created_at DESC').first
 		end
-		artifact.send_data(self, params['path'].split('/',2)[1])
+		artifact.send_data(self, params['path'].split('/', 2)[1])
 	end
 
 end

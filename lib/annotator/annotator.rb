@@ -34,7 +34,7 @@ module Annotator
 
 
 		def parent
-			ParentProxy.new(@parser_node_ast_parameters,@depth+1)
+			ParentProxy.new(@parser_node_ast_parameters, @depth+1)
 		end
 
 
@@ -85,12 +85,12 @@ module Annotator
 
 
 		def parent
-			ParentProxy.new(@ast_parameters,1)
+			ParentProxy.new(@ast_parameters, 1)
 		end
 
 
 		def root
-			ParentProxy.new(@ast_parameters,-1)
+			ParentProxy.new(@ast_parameters, -1)
 		end
 
 
@@ -122,7 +122,7 @@ module Annotator
 			chain = []
 			if match
 				cursor = match.begin(0)
-				match.names.map { |name| [*match.offset(name),name] }.each { |start,finish,name|
+				match.names.map { |name| [*match.offset(name), name] }.each { |start, finish, name|
 					next if (not @names[name])
 					if start
 						chain << text[cursor...start] if cursor < start
@@ -217,7 +217,7 @@ module Annotator
 		def self.dsl_value_writer(*names)
 			names.each { |name|
 				self.__send__(:define_method, name, Proc.new { |value|
-					self.instance_variable_set('@'+name.to_s,value)
+					self.instance_variable_set('@'+name.to_s, value)
 				})
 			}
 		end

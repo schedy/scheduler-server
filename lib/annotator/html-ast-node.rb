@@ -3,7 +3,7 @@ require 'cgi'
 class String
 
 	def html_class_name
-		gsub(/[^A-Za-z0-9]/,'_').gsub(/^[^A-Za-z]/,'_')
+		gsub(/[^A-Za-z0-9]/, '_').gsub(/^[^A-Za-z]/, '_')
 	end
 
 end

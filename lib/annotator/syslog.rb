@@ -59,9 +59,9 @@ each(/^.*[\n\Z]/) {
 						element 'mark'
 						title ->{
 							'HEX->DEC: ' + text.to_i(16).to_s +
-							"\nHEX->BIN: " + (num=text.to_i(16)).to_s(2).rjust((num.size/8.0).ceil*8,'0').scan(/.{4}/).join(' ')  +
+							"\nHEX->BIN: " + (num=text.to_i(16)).to_s(2).rjust((num.size/8.0).ceil*8, '0').scan(/.{4}/).join(' ')  +
 							(text =~ /^[0-9]+$/ ? "\nDEC->HEX: "+text.to_i(10).to_s(16) : '')+
-							(text =~ /^[0-9]+$/ ? "\nDEC->BIN: "+(num=text.to_i(10)).to_s(2).rjust((num.size/8.0).ceil*8,'0').scan(/.{4}/).join(' ') : '') +
+							(text =~ /^[0-9]+$/ ? "\nDEC->BIN: "+(num=text.to_i(10)).to_s(2).rjust((num.size/8.0).ceil*8, '0').scan(/.{4}/).join(' ') : '') +
 							(text =~ /^[0-1]+$/ ? "\nBIN->HEX: "+text.to_i(2).to_s(16) : '')+
 							(text =~ /^[0-1]+$/ ? "\nBIN->DEC: "+text.to_i(2).to_s(10) : '')+
 							''
