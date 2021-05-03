@@ -1,0 +1,17 @@
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+
+  build:
+    runs-on: fedora-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the docker-compose stack
+      run: podman-compose -f compose/container-compose.yml build
+    - name: Up the stack
+      run: podman-compose -f compose/container-compose.yml up
+    - name: Check running containers
+      run: docker ps -a
