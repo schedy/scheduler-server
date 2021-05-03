@@ -8,8 +8,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build the docker-compose stack
-      run: podman-compose -f compose/container-compose.yml build
+      run: docker-compose -f compose/container-compose.yml build
     - name: Up the stack
-      run: podman-compose -f compose/container-compose.yml up
+      run: docker-compose -f compose/container-compose.yml up
     - name: Check running containers
       run: docker ps -a
