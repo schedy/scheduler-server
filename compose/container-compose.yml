@@ -4,8 +4,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/nginx/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-nginx
     ports:
       - "8000:8000"
@@ -18,8 +16,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/postgres/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-pg
     ports:
       - "5432:5432"
@@ -30,8 +26,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     command: seapig-server --disable-json-diff
     ports:
       - "3001:3001"
@@ -44,8 +38,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     environment:
       RAILS_ENV=production
     command: seapig-worker
@@ -64,8 +56,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-router
     command: seapig-router-session-manager
     depends_on:
@@ -77,8 +67,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-status-saver
     command: ruby bin/worker-status-saver http://127.0.0.1:3001/seapig
     depends_on:
@@ -90,8 +78,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-seapig-notifier
     command: seapig-postgresql-notifier
     depends_on:
@@ -103,8 +89,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-dealer
     command: ruby bin/dealer http://127.0.0.1:3001/seapig http://127.0.0.1:3000/
     depends_on:
@@ -116,8 +100,6 @@ services:
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
-    args:
-      buildno: 1
     container_name: schedy-server-rails
     environment:
       RAILS_ENV: production
@@ -127,4 +109,4 @@ services:
       - "3100:3100"
     depends_on:
       database:
-        condition: service_completed_successfully"
+        condition: service_completed_successfully
