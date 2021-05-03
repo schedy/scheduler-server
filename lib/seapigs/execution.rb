@@ -1,7 +1,7 @@
 require './config/environment.rb'
 
 class ExecutionSingle < Producer
-	@patterns = [ 'execution:*' ]
+	@patterns = ['execution:*']
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /execution:(\d+)/
