@@ -1,7 +1,7 @@
 require './config/environment.rb'
 
 class ExecutionTimeline < Producer
-	@patterns = [ 'execution-timeline:*' ]
+	@patterns = ['execution-timeline:*']
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /execution-timeline:(\d+)/

@@ -1,7 +1,7 @@
 require './config/environment.rb'
 
 class TaskSingle < Producer
-	@patterns = [ 'task-*' ]
+	@patterns = ['task-*']
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /task-(\d+)/

@@ -7,7 +7,7 @@ def base64decode(text)
 end
 
 class ExecutionTasks < Producer
-	@patterns = [ 'execution-tasks-filtered-*:*' ]
+	@patterns = ['execution-tasks-filtered-*:*']
 
 	#ActiveRecord::Base.logger = Logger.new(STDERR)
 
@@ -27,7 +27,7 @@ class ExecutionTasks < Producer
 		version = SeapigDependency.versions('Execution:%010i'%[execution_id])
 
 		includes = ['task', 'task_filter', 'task_resources', 'task_worker', 'task_tags']
-		conditions = [ 'true' ]
+		conditions = ['true']
 		params = []
 
 		properties_to_check = []

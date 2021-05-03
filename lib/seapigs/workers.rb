@@ -1,7 +1,7 @@
 require './config/environment.rb'
 
 class Workers < Producer
-	@patterns = [ 'workers' ]
+	@patterns = ['workers']
 
 	def self.produce(_seapig_object_id)
 

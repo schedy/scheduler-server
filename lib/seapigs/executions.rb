@@ -1,7 +1,7 @@
 require './config/environment.rb'
 
 class Executions < Producer
-	@patterns = [ 'executions-*filtered-*:*' ]
+	@patterns = ['executions-*filtered-*:*']
 
 	#ActiveRecord::Base.logger = Logger.new(STDERR)
 
@@ -27,11 +27,11 @@ class Executions < Producer
 			(tags[property] ||= []) << value
 		}
 
-		conditions = [ 'true' ]
+		conditions = ['true']
 		params = []
 		includes = []
 		if not stats
-			includes = [ 'task_statuses', 'tags' ]
+			includes = ['task_statuses', 'tags']
 		end
 
 		if creator

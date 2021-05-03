@@ -1,7 +1,7 @@
 require './config/environment.rb'
 
 class Tasks < Producer
-	@patterns = [ 'tasks-waiting' ]
+	@patterns = ['tasks-waiting']
 
 	def self.produce(_seapig_object_id)
 

@@ -4,30 +4,30 @@ class TaskStatusesController < ApplicationController
 	def create
 
 		constraint_matrix = [
-			[ 'waiting', 'assigned' ],
-			[ 'assigned', 'assigned' ],
-			[ 'assigned', 'accepted' ],
-			[ 'accepted', 'waiting' ],
-			[ 'accepted', 'transition' ],
-			[ 'transition', 'crashed' ],
-			[ 'transition', 'failed' ],
-			[ 'transition', 'timeout' ],
-			[ 'transition', 'started' ],
-			[ 'started', 'crashed' ],
-			[ 'started', 'failed' ],
-			[ 'started', 'timeout' ],
-			[ 'started', 'finished' ]
+			['waiting', 'assigned'],
+			['assigned', 'assigned'],
+			['assigned', 'accepted'],
+			['accepted', 'waiting'],
+			['accepted', 'transition'],
+			['transition', 'crashed'],
+			['transition', 'failed'],
+			['transition', 'timeout'],
+			['transition', 'started'],
+			['started', 'crashed'],
+			['started', 'failed'],
+			['started', 'timeout'],
+			['started', 'finished']
 		]
 
 		worker = Worker.find_or_create_by(name: (params[:worker] or params[:worker_id])) if params[:worker] or params[:worker_id]
 
 		raise if not params[:task_id]
 		if params[:task_id] =~ /\d+/
-			tasks_query = [ 'id = ?', params[:task_id] ]
+			tasks_query = ['id = ?', params[:task_id]]
 			old_status = Task.find(params[:task_id]).status.status
 		else # no locking here yet, since we assume client has sole authority to alter resulting records
 			#tasks_query = [ "exists (select * from task_statuses ts where ts.current and ts.task_id = tasks.id and ts.worker_id = ? and ts.status = ?)", worker.id, params[:task_id] ]
-			tasks_query = [ "exists (select * from task_statuses ts where ts.current and ts.task_id = tasks.id and ts.worker_id = #{worker.id.to_i} and ts.status = '#{Execution.connection.quote_string(params[:task_id])}')" ]
+			tasks_query = ["exists (select * from task_statuses ts where ts.current and ts.task_id = tasks.id and ts.worker_id = #{worker.id.to_i} and ts.status = '#{Execution.connection.quote_string(params[:task_id])}')"]
 			old_status = params[:task_id]
 		end
 
