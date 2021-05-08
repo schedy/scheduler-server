@@ -7,7 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install podman-compose
+    - name: Docker login
+      run: podman login -u schedy -p ${{ secrets.DOCKERHUB }}    
+    - name: Install compose
       run: pip3 install podman-compose
-    - name: Build the docker-compose stack
+    - name: Build the compose stack
       run: podman-compose -f compose/container-compose.yml build
+    - name: Push the compose stack
+      run: podman-compose -f compose/container-compose.yml push
