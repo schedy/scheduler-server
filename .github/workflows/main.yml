@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Image Builds
 
 on: [push]
 
@@ -11,7 +11,3 @@ jobs:
       run: pip3 install podman-compose
     - name: Build the docker-compose stack
       run: podman-compose -f compose/container-compose.yml build
-    - name: Up the stack
-      run: podman-compose -f compose/container-compose.yml up
-    - name: Check running containers
-      run: docker ps -a
