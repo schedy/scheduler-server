@@ -1,6 +1,6 @@
 services:
   schedy-nginx:
-    image: schedy-nginx
+    image: schedy/schedy-nginx
     build:
       context: ../
       dockerfile: ./compose/nginx/Dockerfile
@@ -12,7 +12,7 @@ services:
         condition: service_completed_successfully
 
   database:
-    image: schedy-postgres
+    image: schedy/schedy-postgres
     build:
       context: ../
       dockerfile: ./compose/postgres/Dockerfile
@@ -21,7 +21,7 @@ services:
       - "5432:5432"
 
   seapig-server:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     container_name: schedy-seapig-server
     build:
       context: ../
@@ -34,7 +34,7 @@ services:
         condition: service_completed_successfully
 
   seapig-worker:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -52,7 +52,7 @@ services:
       SECRET_KEY_BASE: a86416f38d79d6c8d8c58d030f9df72a418cb7574f3c6f5b15a7a0140fc0e41aee8a38a907fdacc59a57f3d03c028addd16d1e0b206aabae83c6d25a89177502
 
   schedy-router:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -63,7 +63,7 @@ services:
         condition: service_completed_successfully
 
   schedy-status-saver:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -74,7 +74,7 @@ services:
         condition: service_completed_successfully
 
   seapig-notifier:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -85,7 +85,7 @@ services:
         condition: service_completed_successfully
 
   schedy-dealer:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -96,7 +96,7 @@ services:
         condition: service_completed_successfully
 
   rails:
-    image: schedy-server-devel
+    image: schedy/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
