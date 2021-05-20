@@ -9,7 +9,7 @@ import * as ActiveStorage from "@rails/activestorage"
 import "channels"
 
 window.jQuery = window.$ = require("../../../vendor/assets/javascripts/jquery-3.5.1.js")
-require("../../../vendor/assets/javascripts/bootstrap.js")
+require("../../../vendor/assets/javascripts/bootstrap.bundle.min.js")
 window.d3 = require("../../../vendor/assets/javascripts/d3.min.js")
 window.Dygraph = require("../../../vendor/assets/javascripts/dygraph-combined.js")
 window.jsonpatch = require("../../../vendor/assets/javascripts/json-patch-duplex.js")
