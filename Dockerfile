@@ -14,7 +14,6 @@ RUN gem install bundler:1.13.7
 RUN bundle config --local set path vendor/bundle
 RUN bundle install --path vendor/bundle
 COPY package.json yarn.lock ./
-RUN yarn config set strict-ssl false
 RUN yarn install
 COPY Gemfile Gemfile.lock Rakefile ./
 COPY app/ ./app/
