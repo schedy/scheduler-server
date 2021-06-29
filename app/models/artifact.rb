@@ -4,20 +4,19 @@ class Artifact < ActiveRecord::Base
 	belongs_to :execution, optional: true
 
 
-	def self.create(task: nil, execution: nil, data:)
+	def self.create(task: nil, execution: nil, data:, mimetype:, filename:)
 		raise "Artifact has to belong to some task or execution." if (not task) and (not execution)
 		artifact = Artifact.new
 		artifact.task = task
 		artifact.execution = execution
-		artifact.mimetype = data.content_type
-		artifact.name = data.original_filename
-		content = data.tempfile.read
-		artifact.size = content.bytesize
+		artifact.mimetype = mimetype
+		artifact.name = filename
+		artifact.size = data.bytesize
 		artifact.storage_handler = "ArtifactStoreFile"
 		artifact.storage_handler_data = { "compressor"=>"lz4" }
 		artifact.created_at = Time.new
 		artifact.save!
-		ArtifactStoreFile.put(artifact, content)
+		ArtifactStoreFile.put(artifact, data)
 		SeapigDependency.bump('Execution:%010i'%[artifact.execution.id]) if execution #THINK: what about bumping task?
 		artifact
 	end

@@ -204,7 +204,7 @@ window.Execution =
                                                                 m 'strong.inner',"):"
                                         if execution_task_details? and execution_task_details.initialized
                                                 [
-                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '20px'},
+                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '5px'},
                                                                 m '.col-lg-12',
                                                                         m '.tags.pull-left.col-xs-12',
                                                                                 m '.tag-group.pull-left',
@@ -217,10 +217,33 @@ window.Execution =
                                         else
                                                 m '.col-lg-12',
                                                         m '.col-lg-12',
-                                                                m '.col-lg-12#execution-status-bar-wrapper', style: { 'padding-top': '5px', 'margin-bottom': '30px', width: '100%', position: 'relative', overflow: "hidden"},
+                                                                m '.col-lg-12#execution-status-bar-wrapper', style: { 'padding-top': '5px', 'margin-bottom': '5px', width: '100%', position: 'relative', overflow: "hidden"},
                                                                         m ExecutionStatusBar, task_statuses: execution.object.task_statuses, max_progressbar_width: $('#main-container').innerWidth()-120
                                                                         m Spinner if execution_task_details?
                                         m '.clear'
+                                        m '.col-lg-12#execution-section-width-reference', style: {'margin-bottom': '10px'},
+                                                m '.tags.pull-left.col-xs-6',
+                                                        m '.tag-group.pull-left',
+                                                                if execution? and execution.initialized and (execution.object.artifacts.length > 0)
+                                                                        [
+                                                                                m 'strong.inner',"Execution artifacts:"
+                                                                                m '.col-lg-12',
+                                                                                        for artifact in execution.object.artifacts
+                                                                                                m 'li.list-unstyled',
+                                                                                                        m 'a[href="/executions/'+execution.object.id+'/artifacts/'+artifact.name+'"]',artifact.name
+                                                                                                        m 'span', style: { color: 'darkgrey' }, ' ('+artifact.size+'B) '
+                                                                                                        if artifact.views.length > 0
+                                                                                                                [
+                                                                                                                        m 'span', ' ('
+                                                                                                                        for view, i in artifact.views
+                                                                                                                                [
+                                                                                                                                        m 'a', href: '/executions/'+execution.object.id+'/artifacts/'+artifact.name+'/'+view.path, view.label
+                                                                                                                                        m 'span', ', ' if i<(artifact.views.length-1)
+                                                                                                                                ]
+                                                                                                                        m 'span', ')'
+                                                                                                                ]
+                                                                        ]
+                                        m '.clear', style: { height: "20px" }
                                         m '.col-lg-12',
                                                 m '.col-lg-12',
                                                         if execution? and execution.initialized and (execution.object.task_tag_stats? and Object.keys(execution.object.task_tag_stats).length > 0)
@@ -334,7 +357,7 @@ window.Execution =
                                                                                                                                                                                                         for view, i in artifact.views
                                                                                                                                                                                                                 [
                                                                                                                                                                                                                         m 'a', href: '/tasks/'+task.id+'/artifacts/'+artifact.name+'/'+view.path, view.label
-                                                                                                                                                                                                                        m 'span', ' ' if i<(artifact.views.length-1)
+                                                                                                                                                                                                                        m 'span', ', ' if i<(artifact.views.length-1)
                                                                                                                                                                                                                 ]
                                                                                                                                                                                                         m 'span', ')'
                                                                                                                                                                                                 ]
@@ -347,20 +370,6 @@ window.Execution =
                                                                                                 ]
                                                                 else
                                                                         m Spinner
-
-                                        m '.col-lg-12#execution-section-width-reference', style: { 'padding-top': '15px'},
-                                                m '.tags.pull-left.col-xs-6',
-                                                        m '.tag-group.pull-left',
-                                                                if execution? and execution.initialized and (execution.object.artifacts.length > 0)
-                                                                        [
-                                                                                m 'strong.inner',"Execution artifacts:"
-                                                                                m '.col-lg-12',
-                                                                                        for artifact in execution.object.artifacts
-                                                                                                m 'li.list-unstyled',
-                                                                                                        m 'span.top-padding',
-                                                                                                                m 'a[href="/executions/'+execution.object.id+'/artifacts/'+artifact.name+'"]',artifact.name
-                                                                        ]
-                                        m '.clear', style: { height: "20px" }
 
                                 ]
                         else

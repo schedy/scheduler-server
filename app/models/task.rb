@@ -26,8 +26,9 @@ class Task < ActiveRecord::Base
 		task_params_group = []
 		task_descriptions.each { |description|
 			requirement_id = requirement_ids_by_hash[description["requirements"].hash]
-			description.delete("requirements")
-			task_params_group.push(['('+execution.id.to_s,requirement_id,"'"+Execution.connection.quote_string(JSON.dump(description))+"'",'now()','now())'])
+			description_copy = description.dup
+			description_copy.delete("requirements")
+			task_params_group.push(['('+execution.id.to_s,requirement_id,"'"+Execution.connection.quote_string(JSON.dump(description_copy))+"'",'now()','now())'])
 		}
 
 		tasks = Task.find_by_sql("WITH new_tasks AS (                                                                      "+

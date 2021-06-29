@@ -1,3 +1,12 @@
+require 'shellwords'
+require 'open3'
+
+class ExecutionCreationError < StandardError
+	attr_reader :error_json
+	def initialize(error, hook_exit_code, hook_message)
+		@error_json = {error: error, hook_exit_code: hook_exit_code, hook_message: hook_message}
+	end
+end
 
 class Execution < ActiveRecord::Base
 
@@ -9,6 +18,40 @@ class Execution < ActiveRecord::Base
 	has_many :execution_hooks
 	has_many :artifacts
 
+	def self.create_execution_with_hook(hook_name, hook_input)
+		execution_description = nil
+		summary = {}
+		hooks_dir = 'project/hooks'
+		hooks = Dir.glob("#{hooks_dir}/*")
+		raise 'Incorrect hook request !' if (hook_name.include?("/") or !hooks.any? {|h| File.basename(h) == hook_name })
+		hook = [hooks_dir,Shellwords.escape(hook_name)].join('/')
+		Bundler.with_clean_env {
+			hook_output, hook_error, hook_status = Open3.capture3(hook, :stdin_data=>hook_input)
+			if hook_status.success? and (execution_description = JSON.load(hook_output))
+				execution_description = JSON.load(hook_output)
+				execution_description = execution_description["execution"]  if execution_description["execution"]
+				summary["hook"] = hook_name
+				summary["hook_input"] = hook_input
+				summary["hook_message"] = hook_error
+			else
+				raise ExecutionCreationError.new("Execution creation failed", hook_status, hook_error)
+			end
+		}
+		execution = Execution.create_with_tasks(execution_description)
+		Artifact.create(execution: execution, task: nil, data: summary["hook_message"], mimetype: "text/plain", filename: summary["hook"]+"-output")  if summary["hook_message"]
+		Artifact.create(execution: execution, task: nil, data: summary.delete("hook_input"), mimetype: "text/plain", filename: summary["hook"]+"-input")  if summary["hook_input"]
+		ExecutionHook.create(execution_id: execution.id, status: "initiating", hook: hook_name)
+		summary["execution"] = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
+		return summary
+	end
+
+	def self.create_execution_with_description(execution_description)
+		summary = {}
+		execution = Execution.create_with_tasks(execution_description)
+		Artifact.create(execution: execution, task: nil, data: execution_description.to_json, mimetype: "application/json", filename: "execution.json")
+		summary["execution"] = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
+		return summary
+	end
 
 	def self.create_with_tasks(data)
 		execution = nil
@@ -25,7 +68,6 @@ class Execution < ActiveRecord::Base
 
 				properties = Hash.new {|h,k| h[k] = Property.find_or_create_by!(name: k) }
 				values = Hash.new { |h,k| h[k] = Value.find_or_create_by!(property_id: k[0] , value: k[1]) }
-
 				Task.create_from_description(execution, data["tasks"])
 
 				(data["tags"] or {}).each_pair { |property_name, tag_names|
@@ -54,34 +96,14 @@ class Execution < ActiveRecord::Base
 		execution
 	end
 
-
-	def duplicate_with_tasks
-		duplicate_execution = self.dup
+	def append_tasks(task_descriptions)
 		self.transaction {
-			duplicate_execution.save!
-			duplicate_execution.with_lock {
-
-				Task.create_from_description(duplicate_execution, self.tasks.map { |task| task.description.merge("requirements" => task.requirement.description) })
-
-				self.execution_hooks.each { |hook|
-					duplicate_hook = hook.dup
-					duplicate_hook.save
-					duplicate_execution.execution_hooks << duplicate_hook
-				}
-
-				self.execution_values.each { |execution_value|
-					duplicate_execution_value = execution_value.dup
-					duplicate_execution_value.save
-					duplicate_execution.execution_values << duplicate_execution_value
-				}
-
-				duplicate_execution.save
-				ExecutionStatus.create!(execution_id: duplicate_execution.id, current: true, status: "waiting")
-				duplicate_execution.update_status(true)
+			self.with_lock {
+				Task.create_from_description(self, task_descriptions)
+				self.update_status(true)
 			}
 		}
-		SeapigDependency.bump("Execution","Task","Task:waiting",'Execution:%010i'%[duplicate_execution.id])
-		duplicate_execution
+		SeapigDependency.bump("Execution","Task","Task:waiting",'Execution:%010i'%[self.id])
 	end
 
 
@@ -251,7 +273,9 @@ class Execution < ActiveRecord::Base
 
 	def trigger_hooks(status)
 		self.execution_hooks.where(status: status).each { |hook|
-			`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1 &`  #FIXME: vailidate, escape, etc.
+			Thread.new {
+				`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1`  #FIXME: vailidate, escape, etc.
+			}
 		}
 	end
 

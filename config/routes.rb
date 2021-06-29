@@ -23,10 +23,13 @@ Rails.application.routes.draw do
 			end
 		end
 		collection do
-			post 'create/:hook(.format)' => 'executions#create'
+			post 'create/:hook(.format)' => 'executions#create_with_hook'
 		end
 		member do
-			post 'duplicate' => 'executions#duplicate'
+			post 'retrigger' => 'executions#retrigger'
+		end
+		member do
+			post 'tasks' => 'executions#append_tasks'
 		end
 	end
 

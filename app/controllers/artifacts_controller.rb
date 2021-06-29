@@ -4,9 +4,9 @@ class ArtifactsController < ApplicationController
 
 	def create
 		artifact = if params[:task_id]
-			Artifact.create(task: Task.find(params[:task_id]), data: params[:data])
+			Artifact.create(task: Task.find(params[:task_id]), data: params[:data].tempfile.read, mimetype: params[:data].content_type, filename: params[:data].original_filename)
 		elsif params[:execution_id]
-			Artifact.create(execution: Execution.find(params[:execution_id]), data: params[:data])
+			Artifact.create(execution: Execution.find(params[:execution_id]), data: params[:data].tempfile.read, mimetype: params[:data].content_type, filename: params[:data].original_filename)
 		end
 		render json: { id: artifact.id }
 	end
