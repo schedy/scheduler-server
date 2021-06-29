@@ -73,7 +73,7 @@ window.Executions =
                                                                                         m '.icon',{'title':'Actions'},'★'
                                                                                 m 'ul.dropdown-menu.pull-right',
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-item.execution-action.duplicate-execution',{'href':'?','data-action':'duplicate','data-execution-id': execution.id},'Duplicate'
+                                                                                                m 'a.dropdown-item.execution-action.retrigger-execution',{'href':'?','data-action':'retrigger','data-execution-id': execution.id},'Retrigger'
                                                                                         m 'li',
                                                                                                 m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "cancelled" }'},'Cancel'
                                                                                         m 'li',

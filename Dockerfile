@@ -2,7 +2,7 @@
 # podman build -f Dockerfile --target schedy-server -t schedy-server
 
 FROM fedora:32 AS base
-RUN dnf -y install ruby rubygems libpq nodejs lz4 unzip  bzip2 procps-ng iproute psmisc mc less
+RUN dnf -y install ruby rubygems libpq nodejs lz4 unzip  bzip2 procps-ng iproute psmisc mc less aha
 WORKDIR /schedy-server
 RUN mkdir ./project
 
@@ -14,6 +14,7 @@ RUN gem install bundler:1.13.7
 RUN bundle config --local set path vendor/bundle
 RUN bundle install --path vendor/bundle
 COPY package.json yarn.lock ./
+RUN yarn config set strict-ssl false
 RUN yarn install
 COPY Gemfile Gemfile.lock Rakefile ./
 COPY app/ ./app/
