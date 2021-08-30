@@ -11,14 +11,10 @@ $(document).ready () =>
                 $.post(endpoint, {options: options});
                 $(this).closest(".dropdown-menu").prev().dropdown("toggle");
 
-        $(document).on "click",".delete-worker", ->
-                worker_id = $(this).data('worker-id')
-                endpoint = '/workers/'+worker_id+'/status'
-                $.post(endpoint, {status: null});
-
-        $(document).on "keyup",".filter-search-input", ->
-                search_word = $('.filter-search-input').val()
-                endpoint = '?executions_filter.search='+search_word
+        $(document).on "keyup",".filter-input", ->
+                search_word = $(this).val()
+                router_field = $(this).data('router-field')
+                endpoint = '?executions_filter.'+router_field+'='+search_word
                 router.navigate(endpoint, defer: 1000)
 
         $(document).keypress (e) ->
@@ -32,7 +28,7 @@ $(document).ready () =>
         window.router = new SeapigRouter(window.seapig_client, debug: false)
         window.router.onsessionopen = -> (router.onchange(router.state, router.state) if router.state_valid)
         window.router.default_state = (window.default_route or { show: "executions", executions_filter: { limit: 50 } })
-        window.router.expose = [["execution_id", "execution"]]
+        window.router.expose = [["execution_id", "execution","resource_id"]]
 
         window.router.filter = (state, previous_state)=>
                 if state.show == 'executions'
@@ -69,6 +65,7 @@ $(document).ready () =>
                                 window.execution_tasks = window.subscribe(window.execution_tasks, null)
 
                 window.execution = window.subscribe(window.execution, if state.show == "execution" then 'execution:'+state.execution_id else null)
+                window.resource = window.subscribe(window.resource, if state.show == "resourcecontrol" then 'resource:'+state.resource_id else null)
                 window.execution_task_details = window.subscribe(window.execution_task_details, if state.show_task_details? then 'execution-timeline:'+state.execution_id else null)
                 window.workers = window.subscribe(window.workers, if state.show == "workers" then 'workers' else null)
                 window.task = window.subscribe(window.task, if state.task_unfolded? then 'task-'+state.task_unfolded else null)

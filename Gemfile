@@ -27,6 +27,9 @@ gem 'jbuilder', '~> 2.7'
 
 gem 'slim'
 
+#ideally should be in development environment
+gem 'faker'
+
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 

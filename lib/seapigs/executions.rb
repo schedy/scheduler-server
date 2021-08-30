@@ -20,7 +20,13 @@ class Executions < Producer
 		filter = (states[0].state['executions_filter'] or {})
 		creator = filter['creator']
 		limit = (filter['limit'] or 50)
+		created_before = (filter['created_before'] or nil)
+		created_after = (filter['created_after'] or nil)
 		search_value = filter['search']
+		status = filter['status']
+		id_after = (filter['id_after'] or nil)
+		id_before = (filter['id_before'] or nil)
+
 		tags = {}
 		(filter['tags'] or []).each { |tag|
 			property, value = tag.split(':', 2)
@@ -39,10 +45,36 @@ class Executions < Producer
 			params << creator
 		end
 
+		if created_before and (Date.parse(created_before) rescue nil)
+			conditions << 'executions.created_at < ?'
+			params << created_before
+		end
+
+		if created_after and (Date.parse(created_after) rescue nil)
+			conditions << '(executions.created_at > ?)'
+			params << created_before
+		end
+
+		if status and (status.length > 0)
+			conditions << "(executions.id IN (SELECT execution_statuses.execution_id FROM execution_statuses WHERE execution_statuses.current = true AND execution_statuses.status ILIKE '%' || ? || '%'))"
+			params << status
+		end
+
+		if id_before and (id_before.to_i > 0)
+			conditions << '(executions.id < ?)'
+			params << id_before
+		end
+
+		if id_after and (id_after.to_i > 0)
+			conditions << '(executions.id > ?)'
+			params << id_after
+		end
+
 		if search_value and (search_value.to_i > 0)
 			conditions << ' (executions.id = ? OR executions.id IN (SELECT t.execution_id FROM tasks t WHERE t.id = ?)) '
 			params << search_value
 			params << search_value
+
 
 		elsif search_value and (search_value.length > 1)
 			search_value.split().map { |keyword|

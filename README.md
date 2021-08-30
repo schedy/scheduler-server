@@ -42,6 +42,16 @@ rspec
 
 ## Roadmap
 
+- podman-compose -> swarm/play/k3s
+- easier development cycles mb ?
+- proper fake data
+- fine grained task status setting
+- concept of users
+- send mails ?
+- search by id range, time range, possibly pagination ?
+- click on tags to filter
+- search function for workers page
+- svg icons 32px for resources
 - world conquest
 
 ##

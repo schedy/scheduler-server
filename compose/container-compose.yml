@@ -110,3 +110,16 @@ services:
     depends_on:
       database:
         condition: service_completed_successfully
+
+  webssh:
+    image: schedy/schedy-webssh-server
+    build:
+      context: ../
+      dockerfile: ./compose/util/webssh.Dockerfile
+    container_name: schedy-webssh-server
+    command : /usr/local/bin/node index.js
+    ports:
+      - "2222:2222"
+    depends_on:
+      database:
+        condition: service_completed_successfully

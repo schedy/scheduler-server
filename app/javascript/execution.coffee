@@ -141,94 +141,106 @@ window.Execution =
 
 
         view: (vnode)->
-                m '', style: {"min-height": "400px"},
+                m '.execution-grid-container', style: {"min-height": "400px"},
                         if execution? and execution.initialized
                                 [
-
-                                        m '.col-lg-12.top-padding',
-                                                m '.col-lg-12',
-                                                        m 'strong','ID: '
-                                                        m 'span.execution-id',execution.object.id
-                                        m '.col-lg-12', style: { 'padding-top': '5px'},
-                                                m '.col-lg-12',
-                                                        m 'strong','Status: '
-                                                        m 'span.execution-duration',execution.object.status
-                                        m '.col-lg-12', style: { 'padding-top': '5px'},
-                                                m '.col-lg-12',
-                                                        m 'strong','Run-time: '
-                                                        m 'span', new Date(execution.object.created_at+"Z").toString().substr(0,25)
-                                                        m 'span', ' — '
-                                                        if execution.object.finished_at?
-                                                                m 'span', new Date(execution.object.finished_at+"Z").toString().substr(0,25)
-                                                        else
-                                                                m 'span', "still running"
-                                                        m 'span',' ('
-                                                        m 'span#execution-duration'
-                                                        m 'span',')'
-
-                                        m '.col-lg-12', style: { 'padding-top': '5px'},
-                                                if execution.object.tags?
-                                                        m '.tags.pull-left.col-xs-12',
-                                                                m '.tag-group.pull-left',
-                                                                        m 'strong.inner',m.trust('Tags:&nbsp;&nbsp;')
-                                                                        for key,values of execution.object.tags  when key[0] != '_'
-                                                                                m '.tag.inner',
-                                                                                        [
-                                                                                                m '.key.execution-tag-key-'+key,key
-                                                                                                for value in values
-                                                                                                        if value.match(/http/ )
-                                                                                                                m 'a.value.execution-tag-value-link', href: value,value
-                                                                                                        else
-                                                                                                                m '.value.execution-tag-value-'+value,value
-                                                                                        ],
-                                        m '.col-lg-12', style: { 'padding-top': '5px'},
-                                                if execution.object.hooks?
-                                                        m '.tags.pull-left.col-xs-12',
-                                                                m '.tag-group.pull-left',
-                                                                        m 'strong.inner',m.trust('Hooks:&nbsp;&nbsp;')
-                                                                        for key,value of execution.object.hooks  when key[0] != '_'
-                                                                                m '.tag.inner',
-                                                                                        [
-                                                                                                m 'span.key.execution-tag-key-'+value.status,'@'+value.status
-                                                                                                m 'span.value.execution-tag-value-'+value.hook,value.hook
-                                                                                        ]
-                                        m '.clear'
-                                        m '.col-lg-12#execution-section-width-reference', style: { 'padding-top': '5px'},
-                                                m '.tags.pull-left.col-xs-12',
-                                                        m '.tag-group.pull-left',
-                                                                m 'strong.inner',"Task status ("
-                                                                if router.state.show_task_details?
-                                                                        m 'a', href: "?-show_task_details=1", "hide details"
-                                                                else
-                                                                        m 'a', href: "?show_task_details=1", "show details"
-                                                                m 'strong.inner',"):"
-                                        if execution_task_details? and execution_task_details.initialized
-                                                [
-                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '20px'},
-                                                                m '.col-lg-12',
-                                                                        m '.tags.pull-left.col-xs-12',
-                                                                                m '.tag-group.pull-left',
-                                                                                        for task in execution_task_details.object.tasks
-                                                                                                m 'div.task_marker.task_status_'+task.status, title: 'Task#'+task.id+' '+task.status, ''
-                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '15px'},
-                                                                if execution_task_details? and execution_task_details.initialized and ((e for e in execution_task_details.object.timeline when e.to).length > 0)
-                                                                        m Timeline
-                                                ]
-                                        else
-                                                m '.col-lg-12',
+                                        m '.execution-header-grid-container',
+                                                m '.execution-id-grid',
                                                         m '.col-lg-12',
-                                                                m '.col-lg-12#execution-status-bar-wrapper', style: { 'padding-top': '5px', 'margin-bottom': '30px', width: '100%', position: 'relative', overflow: "hidden"},
-                                                                        m ExecutionStatusBar, task_statuses: execution.object.task_statuses, max_progressbar_width: $('#main-container').innerWidth()-120
-                                                                        m Spinner if execution_task_details?
-                                        m '.clear'
-                                        m '.col-lg-12',
+                                                                m 'strong','ID: '
+                                                                m 'span.execution-id',execution.object.id
+                                                m '.execution-status-grid',
+                                                        m '.col-lg-12',
+                                                                m 'strong','Status: '
+                                                                m 'span.execution-duration',execution.object.status
+                                                m '.execution-runtime-grid',
+                                                        m '.col-lg-12',
+                                                                m 'strong','Run-time: '
+                                                                m 'span', new Date(execution.object.created_at+"Z").toString().substr(0,25)
+                                                                m 'span', ' — '
+                                                                if execution.object.finished_at?
+                                                                        m 'span', new Date(execution.object.finished_at+"Z").toString().substr(0,25)
+                                                                else
+                                                                        m 'span', "still running"
+                                                                m 'span',' ('
+                                                                m 'span#execution-duration'
+                                                                m 'span',')'
+
+                                                m '.execution-tags-grid',
+                                                        if execution.object.tags?
+                                                                m '.tags.pull-left.col-xs-12',
+                                                                        m '.tag-group.pull-left',
+                                                                                m 'strong.inner',m.trust('Tags:&nbsp;&nbsp;')
+                                                                                for key,values of execution.object.tags  when key[0] != '_'
+                                                                                        m '.tag.inner',
+                                                                                                [
+                                                                                                        m '.key.execution-tag-key-'+key,key
+                                                                                                        for value in values
+                                                                                                                if value.match(/http/ )
+                                                                                                                        m 'a.value.execution-tag-value-link', href: value,value
+                                                                                                                else
+                                                                                                                        m '.value.execution-tag-value-'+value,value
+                                                                                                ],
+                                                m '.execution-hooks-grid',
+                                                        if execution.object.hooks? and (execution.object.hooks.length > 0)
+                                                                m '.tags.pull-left.col-xs-12',
+                                                                        m '.tag-group.pull-left',
+                                                                                m 'strong.inner',m.trust('Hooks:&nbsp;&nbsp;')
+                                                                                for key,value of execution.object.hooks  when key[0] != '_'
+                                                                                        m '.tag.inner',
+                                                                                                [
+                                                                                                        m 'span.key.execution-tag-key-'+value.status,'@'+value.status
+                                                                                                        m 'span.value.execution-tag-value-'+value.hook,value.hook
+                                                                                                ]
+
+                                                m '.execution-timeline-grid',
+                                                        m '.col-lg-12.execution-timeline-grid#execution-section-width-reference', style: { 'padding-top': '5px'},
+                                                                m '.tags.pull-left.col-xs-12',
+                                                                        m '.tag-group.pull-left',
+                                                                                m 'strong.inner',"Task status ("
+                                                                                if router.state.show_task_details?
+                                                                                        m 'a', href: "?-show_task_details=1", "hide details"
+                                                                                else
+                                                                                        m 'a', href: "?show_task_details=1", "show details"
+                                                                                m 'strong.inner',"):"
+                                                        if execution_task_details? and execution_task_details.initialized
+                                                                [
+                                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '20px'},
+                                                                                m '.col-lg-12',
+                                                                                        m '.tags.pull-left.col-xs-12',
+                                                                                                m '.tag-group.pull-left',
+                                                                                                        for task in execution_task_details.object.tasks
+                                                                                                                m 'div.task_marker.task_status_'+task.status, title: 'Task#'+task.id+' '+task.status, ''
+                                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '15px'},
+                                                                                if execution_task_details? and execution_task_details.initialized and ((e for e in execution_task_details.object.timeline when e.to).length > 0)
+                                                                                        m Timeline
+                                                                ]
+                                                        else
+                                                                m '.col-lg-12',
+                                                                        m '.col-lg-12',
+                                                                                m '.col-lg-12#execution-status-bar-wrapper', style: { 'padding-top': '5px', 'margin-bottom': '30px', width: '100%', position: 'relative', overflow: "hidden"},
+                                                                                        m ExecutionStatusBar, task_statuses: execution.object.task_statuses, max_progressbar_width: $('#main-container').innerWidth()-120
+                                                                                        m Spinner if execution_task_details?
+                                                m '.execution-artifacts-grid', style: { 'padding-top': '15px'},
+                                                        m '.tags.pull-left.col-xs-6',
+                                                                m '.tag-group.pull-left',
+                                                                        if execution? and execution.initialized and (execution.object.artifacts.length > 0)
+                                                                                [
+                                                                                        m 'strong.inner',"Execution artifacts:"
+                                                                                        m '.col-lg-12',
+                                                                                                for artifact in execution.object.artifacts
+                                                                                                        m 'li.list-unstyled',
+                                                                                                                m 'span.top-padding',
+                                                                                                                        m 'a[href="/executions/'+execution.object.id+'/artifacts/'+artifact.name+'"]',artifact.name
+                                                                                ]
+                                        m '.execution-tasks-grid-container',
                                                 m '.col-lg-12',
                                                         if execution? and execution.initialized and (execution.object.task_tag_stats? and Object.keys(execution.object.task_tag_stats).length > 0)
                                                                 m '.execution-tag-report', id: "tag-report",
                                                                         m '.report',
                                                                                 m 'strong','Tasks:'
                                                                                 m '.col-lg-12',
-                                                                                    m 'table.table.table-condensed.table-hover.execution-tag-table.col-xs-12',
+                                                                                m 'table.table.table-condensed.table-hover.execution-tag-table.col-xs-12',
                                                                                         m 'tbody',
                                                                                                 stats = _.clone(execution.object.task_tag_stats)
                                                                                                 for key,values of router.state.task_list_filter
@@ -279,7 +291,6 @@ window.Execution =
                                                                                                 m 'th.status-column', 'Status'
                                                                                                 m 'th', 'Worker'
                                                                                                 m 'th', 'Resources'
-                                                                                                m 'th.hidden', 'Executor'
                                                                                                 m 'th', 'Tags'
                                                                                 m 'tbody',
                                                                                         for task in execution_tasks.object.tasks
@@ -307,8 +318,6 @@ window.Execution =
                                                                                                                                                                                 m 'a.value.task-tag-value-'+base64encode(value),{"title": value, href: value}, short_value(value)
                                                                                                                                                                         else
                                                                                                                                                                                 m '.value.task-tag-value-'+base64encode(value),{"title": value},short_value(value)
-
-
                                                                                                                                                         ]
                                                                                                         if router.state.task_unfolded == task.id.toString()
                                                                                                                 m 'tr', key: task.id+'_description',
@@ -343,25 +352,10 @@ window.Execution =
                                                                                                                                                         m 'h4','Task requirements:'
                                                                                                                                                         m 'pre', JSON.stringify(window.task.object.requirements, undefined, 8)
                                                                                                                                                 ]
-                                                                                                                                        m Spinner if (not window.task?) or (not window.task.valid)
+                                                                                                                                    m Spinner if (not window.task?) or (not window.task.valid)
                                                                                                 ]
                                                                 else
                                                                         m Spinner
-
-                                        m '.col-lg-12#execution-section-width-reference', style: { 'padding-top': '15px'},
-                                                m '.tags.pull-left.col-xs-6',
-                                                        m '.tag-group.pull-left',
-                                                                if execution? and execution.initialized and (execution.object.artifacts.length > 0)
-                                                                        [
-                                                                                m 'strong.inner',"Execution artifacts:"
-                                                                                m '.col-lg-12',
-                                                                                        for artifact in execution.object.artifacts
-                                                                                                m 'li.list-unstyled',
-                                                                                                        m 'span.top-padding',
-                                                                                                                m 'a[href="/executions/'+execution.object.id+'/artifacts/'+artifact.name+'"]',artifact.name
-                                                                        ]
-                                        m '.clear', style: { height: "20px" }
-
                                 ]
                         else
                                 m Spinner if (not execution?) or (not execution.valid)

@@ -34,11 +34,10 @@ window.ExecutionStatusBar =
 window.Executions =
         view: (vnode)->
                 m '#executions.container-fluid', style: { position: 'relative' },
-                        m 'table.table.table-striped.table-condensed',
+                        m 'table.table.executions-table-grid',
                                 m 'thead',
                                         m 'tr',
                                                 m 'th.id-column', 'ID'
-                                                m 'th.creator-column', 'Creator'
                                                 m 'th.status-column', 'Status'
                                                 m 'th.created-at-column',m.trust('Created&nbsp;at')
                                                 m 'th.tasks-column', 'Tasks'
@@ -50,7 +49,6 @@ window.Executions =
                                                         m 'tr', key: execution.id,
                                                                 m 'td.id_column',
                                                                         m 'a[href="?show=execution&execution_id='+execution.id+'"]', execution.id
-                                                                m 'td.creator-column', execution.creator
                                                                 m 'td.status-column', execution.status
                                                                 m 'td.created-at-column', title: new Date(execution.created_at+"Z").toString().substr(0,25), short_date(execution.created_at+"Z")
                                                                 m 'td.tasks-column',
@@ -71,15 +69,15 @@ window.Executions =
                                                                                                         ]
                                                                 m 'td.actions-column.text-center',
                                                                         m '.dropdown',
-                                                                                m 'button.btn.btn-default.btn-sm.dropdown-toggle',{'data-toggle':'dropdown'},
+                                                                                m 'button.btn.btn-secondary.btn-sm',{'data-bs-toggle':'dropdown'},
                                                                                         m '.icon',{'title':'Actions'},'★'
                                                                                 m 'ul.dropdown-menu.pull-right',
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.duplicate-execution',{'href':'?','data-action':'duplicate','data-execution-id': execution.id},'Duplicate'
+                                                                                                m 'a.dropdown-item.execution-action.duplicate-execution',{'href':'?','data-action':'duplicate','data-execution-id': execution.id},'Duplicate'
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "cancelled" }'},'Cancel'
+                                                                                                m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "cancelled" }'},'Cancel'
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "paused" }'},'Pause'
+                                                                                                m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "paused" }'},'Pause'
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "paused", "to": "waiting" }'},'Resume'
+                                                                                                m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "paused", "to": "waiting" }'},'Resume'
                         m Spinner if (not executions?) or (not executions.valid)

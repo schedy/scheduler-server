@@ -1,34 +1,46 @@
 window.Workers =
         view: (vnode)->
-                m '#workers.container-fluid', style: { position: 'relative' },
-                        m 'table.table.table-condensed[data-seapig-binding-element=workers]',
-                                m 'thead',
-                                        m 'tr',
-                                                m 'th.name-column', 'Name'
-                                                m 'th.date-column', 'Last status update'
+                m Spinner if (not workers?) or (not workers.valid)
+                m '#workers.container-fluid', style: {position: 'relative'},
+                        m 'table.workers-table.table[data-seapig-binding-element=workers]',
+                                m 'thead.workers-table',
+                                        m 'tr.workers-table',
+                                                m 'th.workers-column', 'Workers'
                                                 m 'th.resources-column', 'Resources'
-                                                m 'th.action-icons-column', ''
-                                m 'tbody',
+                                m 'tbody.workers-table',
                                         if workers? and workers.initialized
                                                 for worker in workers.object.workers
                                                         if (((new Date().getTime() - Date.parse(worker.last_status_update)) > 120000)) then worker_status = 'worker-dead' else worker_status = 'worker-alive'
                                                         [
-                                                                m 'tr.'+worker_status+'[data-seapig-binding-element='+worker.id+']', key: worker.name,
-                                                                        m 'td.name-column', {"title": worker.ip},  worker.name
-                                                                        m 'td.date-column', worker.last_status_update
-                                                                        m 'td.resources-column',
-                                                                                if worker.resources?
-                                                                                        for resource in worker.resources
-                                                                                                res_delay = (((new Date().getTime() - (resource.estimated_release_time or 0))))
-                                                                                                resource.info="Estimated: "+new Date(resource.estimated_release_time).toString();
-                                                                                                if resource.task_id == 0 then hsl_degree = 0; sat_degree=0; light_degree=50; resource.info="Locked";
-                                                                                                else if resource.estimated_release_time == null or resource.estimated_release_time == 0 then  hsl_degree = 200; sat_degree=65; light_degree=91; resource.info="Unknown";
-                                                                                                else if resource.task_id == null then hsl_degree = 103; sat_degree=44; light_degree=89; resource.info="Available";
-                                                                                                else if res_delay < -60000 then hsl_degree = 120; sat_degree=80; light_degree=40;
-                                                                                                else if res_delay > 300000 then hsl_degree = 0; sat_degree=80; light_degree=40;
-                                                                                                else hsl_degree = (91.4813 - 0.000291936*res_delay); sat_degree=80; light_degree=40;
+                                                                m 'tr.workers-table',
+                                                                        m 'td.worker-column.workers-table',
+                                                                                m '.worker-grid-container.worker-box',
+                                                                                        m ".worker-name-grid",
+                                                                                                m '.worker-name', {"title": worker.ip}, worker.name
+                                                                                        m ".worker-last-update-grid",
+                                                                                                m '.worker-state', 'Last Update: '+worker.last_status_update
+                                                                                        m ".worker-action-grid",
+                                                                                                m 'a.btn.terminal-access-button.btn-xs.btn-dark',{'target':'_blank','href':worker.terminal_url,'type':'button','title':'Terminal Access'},'>_'
+                                                                        m 'td.resource-column.workers-table',
+                                                                                m '.row.resource-column-wrapper',
+                                                                                        if worker.resources?
+                                                                                                for resource in worker.resources
+                                                                                                        res_delay = (((new Date().getTime() - (resource.estimated_release_time or 0))));
+                                                                                                        hsl_degree = (91.4813 - 0.000291936*res_delay); sat_degree=80; light_degree=40;
+                                                                                                        resource_bg_color = 'hsl('+hsl_degree.toString()+', '+sat_degree+'%, '+light_degree+'%)'
+                                                                                                        resource_state = if (resource.task_id == null) then 'Available' else 'Occupied'
+                                                                                                        task_link = if (resource.task_id == "0") then '?' else "/?show=execution&execution_id="+resource.execution_id+"&task_id="+resource.task_id
+                                                                                                        resource_options = if resource.options then resource.description.options  else resource.type
+                                                                                                        m '.container-sm.resource-box',
+                                                                                                                m '.row.resource-header',
+                                                                                                                        m 'a.resource-id', {"title": resource.identifier}, resource.id
+                                                                                                                        m 'a.resource-name', {"title":"Resource Control", "href":"?show=resourcecontrol&resource_id="+resource.id}, resource.type
+                                                                                                                m '.row.resource-body',
+                                                                                                                        m 'a.resource-state ', {"title":"Estimated Release: "+resource.estimated_release_time, style:{'background-color': resource_bg_color}}, resource_state #XXX:change back to resource.state
+                                                                                                                        m 'a.resource-task_id', {"title":"Execution View", "href": task_link}, resource.task_id
+                                                                                                                m '.resource-right',
+                                                                                                                        m 'img.resource-icon', {"title": resource_options, "src": resource.icon}
 
-                                                                                                resource_color = 'hsl('+hsl_degree.toString()+', '+sat_degree+'%, '+light_degree+'%)'
-                                                                                                m '.resource', {"title": resource.info, style: { float: 'left', "margin-right": '10px', 'padding-left': '5px', 'padding-right': '5px', 'background-color': resource_color }}, resource.id.toString()+":"+resource.type+((resource.task_id == null) and ' ' or (((resource.task_id == 0) and '(🔒)' or '('+resource.task_id+')')))
                                                         ]
-                        m Spinner if (not workers?) or (not workers.valid)
+
+
