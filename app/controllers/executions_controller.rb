@@ -12,7 +12,10 @@ class ExecutionsController < ApplicationController
 		summary = Execution.create_execution_with_hook(hook_name, hook_input)
 		render json: summary
 	rescue ExecutionCreationError => e
-		render json: e.error_json , status: 422
+		hook_error = e.hook_run.artifacts.find_by(name: "stderr").data
+		hook_exit_code = e.hook_run.exit_code
+		hook_run_id = e.hook_run.id
+		render json: { error: e.message, hook_error: hook_error, hook_exit_code: hook_exit_code, hook_run_id: hook_run_id} , status: 422
 	end
 
 	def create
@@ -22,10 +25,10 @@ class ExecutionsController < ApplicationController
 	end
 
 	def append_tasks
-		summary = {}
 		execution = Execution.find(params[:id])
 		task_descriptions = params.to_unsafe_h[:tasks]
 		execution.append_tasks(task_descriptions)
+		summary = {}
 		summary["execution"] = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
 		render json: summary
 	end
@@ -41,12 +44,12 @@ class ExecutionsController < ApplicationController
 
 
 	def retrigger
-		hook_name = ExecutionHook.find_by(execution_id: params[:id], status: "initiating")&.hook
-		if hook_name != nil
-			hook_input = Artifact.find_by(execution_id: params[:id], name: hook_name + "-input").data
-			summary = Execution.create_execution_with_hook(hook_name, hook_input)
+		hook = ExecutionHook.find_by(execution_id: params[:id], status: "initiating")
+		if hook != nil
+			hook_input = hook.hook_run.artifacts.find_by(name: "stdin").data
+			summary = Execution.create_execution_with_hook(hook.hook, hook_input)
 		else
-			exec = Artifact.find_by(execution_id: params[:id]).data
+			exec = Artifact.find_by(execution_id: params[:id], name: "execution.json").data
 			execution_description = JSON.load(exec)
 			summary = Execution.create_execution_with_description(execution_description)
 		end

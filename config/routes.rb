@@ -43,6 +43,14 @@ Rails.application.routes.draw do
 		end
 	end
 
+	resources :hook_runs, only: [] do
+		resources :artifacts, only: [], controller: 'artifacts' do
+			collection do
+				get '*path' => 'artifacts#show', constraints: { path: /.*/ }
+			end
+		end
+	end
+
 	get 'a/(*whatever)' => 'application#index',  constraints: { whatever: /.*/ }
 	root 'application#index'
 

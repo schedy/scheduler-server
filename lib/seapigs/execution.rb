@@ -24,7 +24,19 @@ class ExecutionSingle < Producer
 				}
 			}
 		}
+		hook_run_data = {
+			hook_runs: Execution.find(id).execution_hooks.map {|eh| eh.hook_run}.compact.map { |hook_run|
+				{
+					id: hook_run.id,
+					name: hook_run.name,
+					created_at: hook_run.created_at,
+					finished_at: hook_run.finished_at,
+					artifacts: hook_run.artifacts.map { |artifact|  { id: artifact.id, name: artifact.name, mimetype: artifact.mimetype, size: artifact.size, external_url: artifact.external_url, views: ArtifactView.views(artifact)} }.sort_by { |artifact| artifact[:name] }
+				}
+			}
+		}
 		data = data.description.merge artifact_data
+		data = data.merge hook_run_data
 		[data, version]
 	end
 
