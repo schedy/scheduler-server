@@ -1,37 +1,34 @@
-require 'shellwords'
-require 'open3'
+require 'json'
 
 class ExecutionsController < ApplicationController
 
-	skip_before_action :verify_authenticity_token, only: [:create, :duplicate]
+	skip_before_action :verify_authenticity_token, only: [:create, :create_with_hook, :retrigger, :append_tasks]
 
+
+	def create_with_hook
+		hook_name = params[:hook]+(params[:format] ? "." : "")+(params[:format] || "")
+		hook_input = request.raw_post.force_encoding("UTF-8")
+		raise "Hook input is not a valid UTF-8" if not hook_input.valid_encoding?
+		summary = Execution.create_execution_with_hook(hook_name, hook_input)
+		render json: summary
+	rescue ExecutionCreationError => e
+		hook_error = e.hook_run.artifacts.find_by(name: "stderr").data
+		hook_exit_code = e.hook_run.exit_code
+		hook_run_id = e.hook_run.id
+		render json: { error: e.message, hook_error: hook_error, hook_exit_code: hook_exit_code, hook_run_id: hook_run_id} , status: 422
+	end
 
 	def create
-		execution_description = nil
-		summary = {}
-		if not params[:hook].blank?
-			hooks_dir = 'project/hooks'
-			hook_name = params[:hook]+(params[:format] ? "." : "")+(params[:format] || "")
-			hooks = Dir.glob("#{hooks_dir}/*")
-			raise 'Incorrect hook request !' if (hook_name.include?("/") or !hooks.any? {|h| File.basename(h) == hook_name })
-			hook = [hooks_dir,Shellwords.escape(hook_name)].join('/')
-			Bundler.with_clean_env {
-				hook_input = request.raw_post.force_encoding("UTF-8")
-				raise "Hook input is not a valid UTF-8" if not hook_input.valid_encoding?
-				hook_output, hook_error, hook_status = Open3.capture3(hook, :stdin_data=>hook_input)
-				if hook_status.success? and (execution_description = JSON.load(hook_output))
-					execution_description = JSON.load(hook_output)
-					execution_description = execution_description["execution"]  if execution_description["execution"]
-					summary["hook_message"] = hook_error
-				else
-					return render json: { error: "Execution creation failed", hook_exit_code: hook_status, hook_message: hook_error }, status: 422
-				end
-			}
-		else
-			execution_description = params[:execution].to_unsafe_h
-		end
+		execution_description = params[:execution].to_unsafe_h
+		summary = Execution.create_execution_with_description(execution_description)
+		render json: summary
+	end
 
-		execution = Execution.create_with_tasks(execution_description)
+	def append_tasks
+		execution = Execution.find(params[:id])
+		task_descriptions = params.to_unsafe_h[:tasks]
+		execution.append_tasks(task_descriptions)
+		summary = {}
 		summary["execution"] = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
 		render json: summary
 	end
@@ -46,11 +43,19 @@ class ExecutionsController < ApplicationController
 	end
 
 
-	def duplicate
-		execution_id = params[:id]
-		original_execution = Execution.find(execution_id)
-		duplicate_execution = original_execution.duplicate_with_tasks
-		render json: duplicate_execution
+	def retrigger
+		hook = ExecutionHook.find_by(execution_id: params[:id], status: "initiating")
+		if hook != nil
+			hook_input = hook.hook_run.artifacts.find_by(name: "stdin").data
+			summary = Execution.create_execution_with_hook(hook.hook, hook_input)
+		else
+			exec = Artifact.find_by(execution_id: params[:id], name: "execution.json").data
+			execution_description = JSON.load(exec)
+			summary = Execution.create_execution_with_description(execution_description)
+		end
+		render json: summary
+	rescue ExecutionCreationError => e
+		return render json: e.error_json , status: 422
 	end
 
 end

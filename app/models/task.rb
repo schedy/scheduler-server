@@ -8,6 +8,7 @@ class Task < ActiveRecord::Base
 	has_many :resource_statuses
 	has_many :task_hooks
 	belongs_to :requirement
+	has_many :hook_runs
 
 
 	def self.create_from_description(execution, task_descriptions)
@@ -26,8 +27,9 @@ class Task < ActiveRecord::Base
 		task_params_group = []
 		task_descriptions.each { |description|
 			requirement_id = requirement_ids_by_hash[description["requirements"].hash]
-			description.delete("requirements")
-			task_params_group.push(['('+execution.id.to_s,requirement_id,"'"+Execution.connection.quote_string(JSON.dump(description))+"'",'now()','now())'])
+			description_copy = description.dup
+			description_copy.delete("requirements")
+			task_params_group.push(['('+execution.id.to_s,requirement_id,"'"+Execution.connection.quote_string(JSON.dump(description_copy))+"'",'now()','now())'])
 		}
 
 		tasks = Task.find_by_sql("WITH new_tasks AS (                                                                      "+
@@ -63,7 +65,10 @@ class Task < ActiveRecord::Base
 
 	def trigger_hooks(status)
 		self.task_hooks.where(status: status).each { |hook|
-			`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1 &`  #FIXME: vailidate, escape, etc.
+			Thread.new {
+				hook_run = HookRun.run_hook(hook.hook, "task instance", status, self.id, [self.id.to_s, status], "")
+				hook.hook_run = hook_run
+			}
 		}
 	end
 

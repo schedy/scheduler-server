@@ -2,7 +2,7 @@
 # podman build -f Dockerfile --target schedy-server -t schedy-server
 
 FROM fedora:32 AS base
-RUN dnf -y install ruby rubygems libpq nodejs lz4 unzip  bzip2 procps-ng iproute psmisc mc less
+RUN dnf -y install ruby rubygems libpq nodejs lz4 unzip  bzip2 procps-ng iproute psmisc mc less aha catatonit
 WORKDIR /schedy-server
 RUN mkdir ./project
 

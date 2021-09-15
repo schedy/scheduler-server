@@ -23,10 +23,13 @@ Rails.application.routes.draw do
 			end
 		end
 		collection do
-			post 'create/:hook(.format)' => 'executions#create'
+			post 'create/:hook(.format)' => 'executions#create_with_hook'
 		end
 		member do
-			post 'duplicate' => 'executions#duplicate'
+			post 'retrigger' => 'executions#retrigger'
+		end
+		member do
+			post 'tasks' => 'executions#append_tasks'
 		end
 	end
 
@@ -34,6 +37,14 @@ Rails.application.routes.draw do
 		resources :status, only: [:create], controller: 'task_statuses'
 		resources :tags, only: [:create], controller: 'task_values'
 		resources :artifacts, only: [:create], controller: 'artifacts' do
+			collection do
+				get '*path' => 'artifacts#show', constraints: { path: /.*/ }
+			end
+		end
+	end
+
+	resources :hook_runs, only: [] do
+		resources :artifacts, only: [], controller: 'artifacts' do
 			collection do
 				get '*path' => 'artifacts#show', constraints: { path: /.*/ }
 			end
