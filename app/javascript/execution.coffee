@@ -222,17 +222,53 @@ window.Execution =
                                                                                         m ExecutionStatusBar, task_statuses: execution.object.task_statuses, max_progressbar_width: $('#main-container').innerWidth()-120
                                                                                         m Spinner if execution_task_details?
                                                 m '.execution-artifacts-grid', style: { 'padding-top': '15px'},
-                                                        m '.tags.pull-left.col-xs-6',
-                                                                m '.tag-group.pull-left',
-                                                                        if execution? and execution.initialized and (execution.object.artifacts.length > 0)
-                                                                                [
-                                                                                        m 'strong.inner',"Execution artifacts:"
-                                                                                        m '.col-lg-12',
-                                                                                                for artifact in execution.object.artifacts
-                                                                                                        m 'li.list-unstyled',
-                                                                                                                m 'span.top-padding',
-                                                                                                                        m 'a[href="/executions/'+execution.object.id+'/artifacts/'+artifact.name+'"]',artifact.name
-                                                                                ]
+                                                        m '.pull-left',
+                                                                if execution? and execution.initialized and (execution.object.hook_runs.length > 0)
+                                                                        [
+                                                                                m 'strong.inner',"Hook artifacts:"
+                                                                                m '.col-lg-12',
+                                                                                        for hook_run in execution.object.hook_runs
+                                                                                                m 'li.list-unstyled',
+                                                                                                        hook_run.name
+                                                                                                        m 'span', ' [ '
+                                                                                                        for artifact, n in hook_run.artifacts
+                                                                                                                [
+                                                                                                                        m 'a', href: '/hook_runs/'+hook_run.id+'/artifacts/'+artifact.name , artifact.name
+                                                                                                                        m 'span', style: { color: 'darkgrey' }, ' ('+artifact.size+'B) '
+                                                                                                                        if artifact.views.length > 0
+                                                                                                                                [
+                                                                                                                                        m 'span', ' ('
+                                                                                                                                        for view, i in artifact.views
+                                                                                                                                                [
+                                                                                                                                                        m 'a', href: '/hook_runs/'+hook_run.id+'/artifacts/'+artifact.name+'/'+view.path, view.label
+                                                                                                                                                        m 'span', ', ' if i < (artifact.views.length - 1)
+                                                                                                                                                ]
+                                                                                                                                         m 'span', ')'
+                                                                                                                                 ]
+                                                                                                                        m 'span', ', ' if n < (hook_run.artifacts.length - 1)
+                                                                                                                ]
+                                                                                                        m 'span', ' ]'
+                                                                        ]
+                                                        m '.tag-group.pull-left',
+                                                                if execution? and execution.initialized and (execution.object.artifacts.length > 0)
+                                                                        [
+                                                                                m 'strong.inner',"Execution artifacts:"
+                                                                                m '.col-lg-12',
+                                                                                        for artifact in execution.object.artifacts
+                                                                                                m 'li.list-unstyled',
+                                                                                                        m 'a[href="/executions/'+execution.object.id+'/artifacts/'+artifact.name+'"]',artifact.name
+                                                                                                        m 'span', style: { color: 'darkgrey' }, ' ('+artifact.size+'B) '
+                                                                                                        if artifact.views.length > 0
+                                                                                                                [
+                                                                                                                        m 'span', ' ('
+                                                                                                                        for view, i in artifact.views
+                                                                                                                                [
+                                                                                                                                        m 'a', href: '/executions/'+execution.object.id+'/artifacts/'+artifact.name+'/'+view.path, view.label
+                                                                                                                                        m 'span', ', ' if i < (artifact.views.length - 1)
+                                                                                                                                ]
+                                                                                                                        m 'span', ')'
+                                                                                                                ]
+                                                                        ]
                                         m '.execution-tasks-grid-container',
                                                 m '.col-lg-12',
                                                         if execution? and execution.initialized and (execution.object.task_tag_stats? and Object.keys(execution.object.task_tag_stats).length > 0)

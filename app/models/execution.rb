@@ -2,9 +2,9 @@ require 'shellwords'
 require 'open3'
 
 class ExecutionCreationError < StandardError
-	attr_reader :error_json
-	def initialize(error, hook_exit_code, hook_message)
-		@error_json = {error: error, hook_exit_code: hook_exit_code, hook_message: hook_message}
+	attr_accessor :message, :hook_run
+	def initialize(message, hook_run)
+		@message, @hook_run = message, hook_run
 	end
 end
 
@@ -17,38 +17,29 @@ class Execution < ActiveRecord::Base
 	has_many :execution_values
 	has_many :execution_hooks
 	has_many :artifacts
+	has_many :hook_runs
 
 	def self.create_execution_with_hook(hook_name, hook_input)
-		execution_description = nil
-		summary = {}
-		hooks_dir = 'project/hooks'
-		hooks = Dir.glob("#{hooks_dir}/*")
-		raise 'Incorrect hook request !' if (hook_name.include?("/") or !hooks.any? {|h| File.basename(h) == hook_name })
-		hook = [hooks_dir,Shellwords.escape(hook_name)].join('/')
-		Bundler.with_clean_env {
-			hook_output, hook_error, hook_status = Open3.capture3(hook, :stdin_data=>hook_input)
-			if hook_status.success? and (execution_description = JSON.load(hook_output))
-				execution_description = JSON.load(hook_output)
-				execution_description = execution_description["execution"]  if execution_description["execution"]
-				summary["hook"] = hook_name
-				summary["hook_input"] = hook_input
-				summary["hook_message"] = hook_error
-			else
-				raise ExecutionCreationError.new("Execution creation failed", hook_status, hook_error)
-			end
-		}
+		hook_run = HookRun.run_hook(hook_name, "execution class", "initiating", nil, [], hook_input)
+		hook_output = hook_run.artifacts.find_by(name: "stdout").data
+		hook_error = hook_run.artifacts.find_by(name: "stderr").data
+		raise ExecutionCreationError.new("Execution creation failed", hook_run) if hook_run.exit_code != 0
+		execution_description = JSON.load(hook_output)
+		execution_description = execution_description["execution"]  if execution_description["execution"]
 		execution = Execution.create_with_tasks(execution_description)
-		Artifact.create(execution: execution, task: nil, data: summary["hook_message"], mimetype: "text/plain", filename: summary["hook"]+"-output")  if summary["hook_message"]
-		Artifact.create(execution: execution, task: nil, data: summary.delete("hook_input"), mimetype: "text/plain", filename: summary["hook"]+"-input")  if summary["hook_input"]
-		ExecutionHook.create(execution_id: execution.id, status: "initiating", hook: hook_name)
+		summary = {}
+		summary["hook"] = hook_name
+		summary["hook_input"] = hook_input
+		summary["hook_message"] = hook_error
 		summary["execution"] = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
+		ExecutionHook.create(execution_id: execution.id, status: "initiating", hook: hook_name, hook_run_id: hook_run.id)
 		return summary
 	end
 
 	def self.create_execution_with_description(execution_description)
-		summary = {}
 		execution = Execution.create_with_tasks(execution_description)
-		Artifact.create(execution: execution, task: nil, data: execution_description.to_json, mimetype: "application/json", filename: "execution.json")
+		Artifact.create!(execution: execution, task: nil, data: execution_description.to_json, mimetype: "application/json", filename: "execution.json")
+		summary = {}		
 		summary["execution"] = Execution.detailed_summary(include: ["task","task_details","task_artifacts","artifacts","tags"], conditions: "executions.id = ?", params: [execution.id]).first.description
 		return summary
 	end
@@ -274,7 +265,8 @@ class Execution < ActiveRecord::Base
 	def trigger_hooks(status)
 		self.execution_hooks.where(status: status).each { |hook|
 			Thread.new {
-				`unset BUNDLE_GEMFILE; cd project/hooks/ ; nohup ./#{hook.hook} #{self.id} #{status} 1>>../../log/#{hook.hook}.log 2>&1`  #FIXME: vailidate, escape, etc.
+				hook_run = HookRun.run_hook(hook.hook, "execution instance", status, self.id, [self.id.to_s, status], "")
+				hook.hook_run = hook_run
 			}
 		}
 	end

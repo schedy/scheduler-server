@@ -1,3 +1,5 @@
+require 'shellwords'
+
 class ArtifactViewConsole < ArtifactView
 
 	@@handle = "console"
@@ -8,7 +10,7 @@ class ArtifactViewConsole < ArtifactView
 
 
 	def self.views(artifact)
-		[{path: @@handle+'/console.html', label: "console"}]  if artifact.name =~ /(output|.log|.txt)$/
+		[{path: @@handle+'/console.html', label: "console"}]  if artifact.name =~ /(stderr|stdout|stdin|output|.log|.txt)$/
 	end
 
 
@@ -17,7 +19,7 @@ class ArtifactViewConsole < ArtifactView
 		filename = dirname+'/console.html'
 		if not Dir.exist?(dirname)
 			FileUtils.mkdir_p(dirname)
-			open("| aha >'#{filename}'","w") { |aha|
+                        open("| aha --title #{Shellwords.escape(artifact.name)} > '#{filename}'","w") { |aha|
 				aha.write(artifact.data.force_encoding("UTF-8"))
 			}
 		end
