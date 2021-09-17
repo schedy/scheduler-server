@@ -1,0 +1,21 @@
+#!/bin/env ruby
+
+require 'set'
+require 'seapig-client'
+require 'typhoeus'
+
+WebSocket.max_frame_size = 200 * 1024 * 1024 # 200MB
+
+$hostname = Socket.gethostname
+
+$stdout.sync = 1
+
+if Database.connect() then puts 'Successfully connected to database' end
+
+EM.run {
+
+    seapig_client = SeapigClient.new(ARGV[0], name: "commander" debug: true)
+    waiting_orders = seapig_client.master('orders-waiting')
+	acknowledged_orders = seapig_client.slave('orders-acknowledged:*')
+
+}

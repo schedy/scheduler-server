@@ -34,7 +34,7 @@ window.Workers =
                                                                                                         m '.container-sm.resource-box',
                                                                                                                 m '.row.resource-header',
                                                                                                                         m 'a.resource-id', {"title": resource.identifier}, resource.id
-                                                                                                                        m 'a.resource-name', {"title":"Resource Control", "href":"?show=resourcecontrol&resource_id="+resource.id}, resource.type
+                                                                                                                        m 'a.resource-name[href=?show=resourcecontrol&resource_id='+resource.id+']', {"title":"Resource Control"}, resource.type
                                                                                                                 m '.row.resource-body',
                                                                                                                         m 'a.resource-state ', {"title":"Estimated Release: "+resource.estimated_release_time, style:{'background-color': resource_bg_color}}, resource_state #XXX:change back to resource.state
                                                                                                                         m 'a.resource-task_id', {"title":"Execution View", "href": task_link}, resource.task_id
