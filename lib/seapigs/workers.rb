@@ -13,8 +13,7 @@ class Workers < Producer
             ip: worker.status.data["ip"],
             name: worker.name,
             last_status_update: worker.status.created_at,
-            terminal_url: "http://localhost:2222" + "/ssh/host/" + worker.status.data["ip"],
-            resources: worker.status.data["resources"].filter_map { |r| r.merge({ "execution_id" => (Task.find_by(id: r["task_id"]).execution_id or "none") }) if r["task_id"].to_i > 0 }
+            resources: worker.status.data['resources'].map { |r| (!r['task_id']&.nonzero?) ? r : r.merge!({"execution_id":(Task.find(r["task_id"]).execution_id)}) }.sort_by { |r| r["type"] }
           }
         }
       }

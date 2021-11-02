@@ -3,19 +3,6 @@ class Artifact < ActiveRecord::Base
 	belongs_to :execution, optional: true
 	belongs_to :hook_run, optional: true
 
-<<<<<<< HEAD
-	def self.create(task: nil, execution: nil, data:)
-		raise 'Artifact has to belong to some task or execution.' if (not task) and (not execution)
-		artifact = Artifact.new
-		artifact.task = task
-		artifact.execution = execution
-		artifact.mimetype = data.content_type
-		artifact.name = data.original_filename
-		content = data.tempfile.read
-		artifact.size = content.bytesize
-		artifact.storage_handler = 'ArtifactStoreFile'
-		artifact.storage_handler_data = { 'compressor'=>'lz4' }
-=======
 
 	def self.create!(task: nil, execution: nil, data:, mimetype:, filename:, hook_run: nil)
 		raise "Artifact has to belong to some task or execution or hook run!" if (not task) and (not execution) and (not hook_run)
@@ -28,7 +15,6 @@ class Artifact < ActiveRecord::Base
 		artifact.size = data.bytesize
 		artifact.storage_handler = "ArtifactStoreFileNewDirStructure"
 		artifact.storage_handler_data = { "compressor"=>"lz4" }
->>>>>>> 327b864 (feat: added execution artifacts, console view, and retrigger execution)
 		artifact.created_at = Time.new
 		artifact.save!
 		ArtifactStoreFileNewDirStructure.put(artifact, data)

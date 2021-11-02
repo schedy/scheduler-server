@@ -69,16 +69,8 @@ body
         &.task_status_accepted, &.task_status_transition, &.task_status_started
                 animation: background-pulsate 2s infinite steps(10)
 
-table
-        .id-column
-                width: 50px
-        .status-column
-                width: 80px
-        .date-column
-                width: 200px
-
 #filters
-        white-space: nowrap
+        font-size: smaller
 
 .filter-selected
         font-weight: bold
@@ -122,7 +114,6 @@ table
         padding-left: 0.3em
         background-color: peachpuff
         border: 1px solid black
-        border-top-left-radius: 5px
 
 .key-checkbox
         padding-right: 0.3em
@@ -141,7 +132,6 @@ table
         background-color: lightgray
         border: 1px solid black
         border-left: 0px
-        border-bottom-right-radius: 5px
 
 .value.task-tag-value-NOT_SET
         background-color: white
@@ -225,13 +215,13 @@ table
                 stroke-width: 1px
 
 #timeline-tooltip
-        width: 160px
-        height: 55px
+        width: 420px
         background-color: rgba(255,255,200,1)
         padding: 5px
         border: 1px black solid
         display: none
-
+        font-size: smaller
+        overflow-wrap: break-word
 
 .dygraph-ylabel
         font-weight: bold
@@ -244,13 +234,17 @@ table
 .worker-alive
         background-color: #7fc97f
 
+.workers-column
+  text-align: center
+
+.resources-column
+  text-align: center
 
 .worker-box
   font-family: "monospace"
   font-size: 12px
   border: 2px solid black
   border-radius: 5px
-  background-color: #7fc97f
   padding: 1em
   color: black
 
@@ -308,10 +302,10 @@ td.workers-table
   font-size: 12px
   display: grid
   grid-auto-columns: 1fr
-  grid-template-columns: 1.8fr 0.2fr
+  grid-template-columns: 5fr 1fr
   grid-template-rows: 1fr 1fr
   gap: 0px 0px
-  grid-template-areas: "header right" "body right"
+  grid-template-areas: "header right" "header right"
   grid-auto-flow: column
 
 .resource-header
@@ -323,7 +317,6 @@ td.workers-table
 
 .resource-body
   display: grid
-  grid-template-columns: 45% 55%
   grid-template-rows: 1fr
   grid-template-areas: ". ."
   border-right: 0.8px solid black
@@ -341,6 +334,7 @@ td.workers-table
 .resource-id
   color: black
   text-align: left
+  font-weight: bolder
 
 .resource-task_id
   text-align: right
@@ -406,7 +400,6 @@ hr
 
 a
   text-decoration: none
-  color: black
 
 .extra-filters-container
   padding: 10px
@@ -437,6 +430,7 @@ a
 
 .filters-grid
   grid-area: filter
+  margin-top: 10px
 
 .executions-grid
   grid-area: executions
@@ -448,7 +442,7 @@ a
   display: grid
   border-collapse: collapse
   min-width: 100%
-  grid-template-columns: minmax(50px, 0.1fr) minmax(80px, 0.1fr) minmax(200px, 1.67fr) minmax(150px, 3.33fr) minmax(150px, 3.33fr) minmax(50px, 1fr)
+  grid-template-columns: minmax(100px, 0.1fr) minmax(80px, 0.1fr) minmax(50px, 0.5fr) minmax(150px, 3fr) minmax(150px, 3.33fr) minmax(50px, 0.5fr)
   thead, tbody, tr
     display: contents
 
@@ -509,7 +503,7 @@ a
   display: flex !important
   flex-direction: column
   justify-content: center
-  max-width: fit-content
+  max-width: max-content
 
 .execution-grid-container
   display: grid
@@ -522,7 +516,7 @@ a
 .execution-header-grid-container
   display: grid
   grid-template-columns: fit-content(100%)
-  grid-template-rows: 0.5fr 1fr 1.5fr 1fr 1fr
+  grid-template-rows: 0.1fr 0.1fr 0.1fr 0.1fr 1fr
   gap: 10px 5px
   grid-auto-flow: row
   grid-template-areas: "execution-id-grid execution-status-grid execution-runtime-grid" "execution-tags-grid execution-tags-grid execution-tags-grid" "execution-hooks-grid execution-hooks-grid execution-artifacts-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid"
@@ -601,3 +595,5 @@ code
   white-space: pre
   text-align: left
 
+.executions-table-header
+  text-align: center

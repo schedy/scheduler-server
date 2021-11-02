@@ -10,11 +10,12 @@ window.Filters =
                         m 'ul#filters.list-unstyled',
                                 if execution_filters? and execution_filters.initialized
                                         grouped_tags = _.groupBy execution_filters.object.tags, (obj) -> obj.substring(0,obj.indexOf(':'))
+                                        #arrayed_tags = _.map(grouped_tags, function(v,k) { var obj={}; obj[k]=v; return obj; })
                                         for key,value of grouped_tags
                                                 m 'li',
+                                                        m 'hr',style: {margin: '3px'}
                                                         m 'span.filter-parent',key,
                                                                 m 'a[href="?'+(_.contains(router.state.hidden_tags,key) and '-' or '')+'hidden_tags~='+key+'"]',{'data-parent-tag': key}, (_.contains(router.state.hidden_tags,key) and '▼' or '▲')
-                                                        m 'hr',style: {margin: '3px'}
                                                         if ( undefined == router.state.hidden_tags) or (!_.contains(router.state.hidden_tags,key))
                                                                 for tag in value
                                                                         selected = _.contains(router.state.executions_filter.tags,tag)

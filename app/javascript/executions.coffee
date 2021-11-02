@@ -35,7 +35,7 @@ window.Executions =
         view: (vnode)->
                 m '#executions.container-fluid', style: { position: 'relative' },
                         m 'table.table.executions-table-grid',
-                                m 'thead',
+                                m 'thead.executions-table-header',
                                         m 'tr',
                                                 m 'th.id-column', 'ID'
                                                 m 'th.status-column', 'Status'
@@ -43,7 +43,7 @@ window.Executions =
                                                 m 'th.tasks-column', 'Tasks'
                                                 m 'th.tags-column.text-center', 'Tags'
                                                 m 'th.actions-column.text-center', 'Actions'
-                                m 'tbody',
+                                m 'tbody.executions-table-body',
                                         if executions? and executions.initialized
                                                 for execution in executions.object.executions
                                                         m 'tr', key: execution.id,
@@ -69,8 +69,10 @@ window.Executions =
                                                                                                         ]
                                                                 m 'td.actions-column.text-center',
                                                                         m '.dropdown',
-                                                                                m 'button.btn.btn-secondary.btn-sm',{'data-bs-toggle':'dropdown'},
-                                                                                        m '.icon',{'title':'Actions'},'★'
+                                                                                m 'button.btn.btn-outline-dark.btn-sm',{'data-bs-toggle':'dropdown'},
+                                                                                        m 'svg.actions',{'xmlns':'http://www.w3.org/2000/svg', 'width':"16", 'height':"16", 'fill':"currentColor", 'class':"bi bi-list", 'viewBox':"0 0 16 16"},
+                                                                                                 m 'path', {'fill-rule':"evenodd", 'd':"M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"}
+
                                                                                 m 'ul.dropdown-menu.pull-right',
                                                                                         m 'li',
                                                                                                 m 'a.dropdown-item.execution-action.retrigger-execution',{'href':'?','data-action':'retrigger','data-execution-id': execution.id},'Retrigger'

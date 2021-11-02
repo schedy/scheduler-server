@@ -82,8 +82,12 @@ Timeline =
                         y = if d3.event.layerY < $('#timeline').height()-$('#timeline-tooltip').height() - 20 then d3.event.layerY + 8 else d3.event.layerY - $('#timeline-tooltip').height() - 20
                         block = _.find(@rectangles_data,(rectangle_data)-> rectangle_data.from <= time and rectangle_data.to >= time and rectangle_data.resource_id == resource_id)
                         if block?
-                                text = "Task #"+block.task_id+"<br>Duration: "+sec2hhmmss((block.to-block.from)/1000)
+                                task = _.find(execution_tasks.object.tasks, (h) -> h['id'] == block.task_id)
+                                task_status = task.status || 'none'
+                                task_tags = JSON.stringify(task.tags)
+                                text = "Task #"+block.task_id+"<br>Duration: "+sec2hhmmss((block.to-block.from)/1000)+"<br>Status: "+task_status+"<br>Tags: "+task_tags
                                 d3.select('#timeline-tooltip').style("left",x+"px").style("top",y+"px").style("display","block").html(text)
+                                $('#timeline-tooltip').addClass('task_status_'+task_status)
                         else
                                 d3.select('#timeline-tooltip').style("display","none"))
                 d3.select('#lower-mask').on("mouseout",()=>d3.select('#timeline-tooltip').style("display","none"))
@@ -194,7 +198,7 @@ window.Execution =
                                                                                                 ]
 
                                                 m '.execution-timeline-grid',
-                                                        m '.col-lg-12.execution-timeline-grid#execution-section-width-reference', style: { 'padding-top': '5px'},
+                                                        m '.col-lg-12.task-statuses-header#execution-section-width-reference', style: { 'padding-top': '5px'},
                                                                 m '.tags.pull-left.col-xs-12',
                                                                         m '.tag-group.pull-left',
                                                                                 m 'strong.inner',"Task status ("
@@ -205,13 +209,13 @@ window.Execution =
                                                                                 m 'strong.inner',"):"
                                                         if execution_task_details? and execution_task_details.initialized
                                                                 [
-                                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '20px'},
+                                                                        m '.col-lg-12.row.task-statuses-body', style: { 'padding-top': '5px', 'margin-bottom': '20px'},
                                                                                 m '.col-lg-12',
                                                                                         m '.tags.pull-left.col-xs-12',
                                                                                                 m '.tag-group.pull-left',
                                                                                                         for task in execution_task_details.object.tasks
                                                                                                                 m 'div.task_marker.task_status_'+task.status, title: 'Task#'+task.id+' '+task.status, ''
-                                                                        m '.col-lg-12', style: { 'padding-top': '5px', 'margin-bottom': '15px'},
+                                                                        m '.col-lg-12.row.execution-timeline-container', style: { 'padding-top': '5px', 'margin-bottom': '15px'},
                                                                                 if execution_task_details? and execution_task_details.initialized and ((e for e in execution_task_details.object.timeline when e.to).length > 0)
                                                                                         m Timeline
                                                                 ]
