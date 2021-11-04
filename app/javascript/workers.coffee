@@ -24,7 +24,7 @@ window.Workers =
                                                                         m 'td.worker-column.workers-table',
                                                                                 m '.worker-grid-container.worker-box.'+worker_status,
                                                                                         m ".worker-name-grid",
-                                                                                                m '.worker-name', {"title": worker.ip}, worker.name
+                                                                                                m 'a.worker-name[href=?show=worker&worker_id='+worker.id+']', {"title": worker.ip}, worker.name
                                                                                         m ".worker-last-update-grid",
                                                                                                 m '.worker-state', 'Last Update: '+worker.last_status_update
                                                                                         m ".worker-action-grid",

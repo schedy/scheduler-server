@@ -28,7 +28,7 @@ require("../spinner.coffee")
 require("../utils.coffee")
 require("../workers.coffee")
 require("../resource_control.coffee")
-
+require("../worker_control.coffee")
 Rails.start()
 Turbolinks.start()
 ActiveStorage.start()

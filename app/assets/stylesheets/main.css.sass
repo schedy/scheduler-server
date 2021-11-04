@@ -434,24 +434,68 @@ a
   thead, tbody, tr
     display: contents
 
+.resource-row-wrapper
+  display: grid
+  grid-template-colums: 180px
+  grid-auto-flow: column
+  grid-gap: 5px 5px
+
 .resource-control-container
   display: grid
-  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr)
-  grid-template-rows: 0.2fr 1.6fr 0.4fr
+  grid-template-columns: minmax(200px, 1.0fr) minmax(200px, 1fr)
+  grid-template-rows: minmax(50px, 0.2fr) 1.6fr 0.4fr
   gap: 0.5em 0.5em
-  grid-template-areas: "header actions" "description logs" "mounts logs"
+  grid-template-areas: "header actions" "description picture" "status logs"
   grid-row-gap: 1px
+
+.worker-control-container
+  display: grid
+  grid-template-columns: minmax(200px, 1.0fr) minmax(200px, 1fr)
+  grid-template-rows: minmax(50px, 0.15fr) 1.6fr 0.4fr
+  gap: 0.5em 0.5em
+  grid-template-areas: "header actions" "description picture" "status logs"
+  grid-row-gap: 1px
+
+
+.resources-grid
+  grid-area: resources
+
 
 .logs-grid
   grid-area: logs
 
 .description-grid
+  display: grid
+  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr)
+  gap: 0.5em 0.5em
+  grid-template-areas: "descriptionjson resourcebox"
   grid-area: description
+
+.description-worker-grid
+  grid-area: description
+
+.descriptionjson-grid
+  grid-area: descriptionjson
 
 .mounts-grid
   grid-area: mounts
 
+.status-grid
+  grid-area: status
+
+.resourcebox-grid
+  grid-area: resourcebox
+  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr)
+
+.picture-grid
+  grid-area: picture
+  text-align: center
+  margin: 20px
+
 .resource-control-header
+  grid-area: header
+
+.worker-control-header
   grid-area: header
 
 .actions-grid-container
@@ -507,11 +551,14 @@ a
   grid-template-rows: 0.1fr 0.1fr 0.1fr 1fr 1fr
   gap: 10px 5px
   grid-auto-flow: row
-  grid-template-areas: "execution-id-grid execution-status-grid execution-runtime-grid execution-actions-grid" "execution-tags-grid execution-tags-grid execution-tags-grid execution-tags-grid" "execution-hooks-grid execution-hooks-grid execution-artifacts-grid execution-artifacts-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid execution-timeline-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid execution-timeline-grid"
+  grid-template-areas: "execution-id-grid execution-status-grid   execution-runtime-grid" "execution-tags-grid execution-tags-grid execution-button-grid" "execution-hooks-grid execution-hooks-grid execution-artifacts-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid"
   grid-area: execution-header-grid-container
 
 .execution-actions-grid
   grid-area: execution-actions-grid
+
+.execution-buttons-grid
+  gird-area: execution-button-grid
 
 .execution-id-grid
   grid-area: execution-id-grid
@@ -585,6 +632,21 @@ code
   border: 1px solid #e5e5e5
   white-space: pre
   text-align: left
+
+code2
+  background-color: #eee
+  padding: 3px 5px
+  display: inline-block
+  font-size: 12px
+  display: block
+  overflow: auto
+  color: #515151
+  padding: 20px
+  border-radius: 3px
+  border: 1px solid #e5e5e5
+  white-space: pre
+  text-align: left
+  margin: 20px
 
 .executions-table-header
   text-align: center
