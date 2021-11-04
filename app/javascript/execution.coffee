@@ -169,7 +169,13 @@ window.Execution =
                                                                 m 'span',' ('
                                                                 m 'span#execution-duration'
                                                                 m 'span',')'
-
+                                                m '.execution-actions-grid',
+                                                        m 'strong.inner',"Toggle Names ("
+                                                                if router.state.tag_shorten
+                                                                        m 'a', href: "?-tag_shorten=1", "Short Names"
+                                                                else
+                                                                        m 'a', href: "?tag_shorten=1", "Long Names"
+                                                        m 'strong.inner',"):"
                                                 m '.execution-tags-grid',
                                                         if execution.object.tags?
                                                                 m '.tags.pull-left.col-xs-12',
@@ -354,10 +360,11 @@ window.Execution =
                                                                                                                                                         [
                                                                                                                                                                 m '.key.task-tag-key-'+key,key
                                                                                                                                                                 for value in values
+                                                                                                                                                                        value = if router.state.tag_shorten then short_value(value) else value
                                                                                                                                                                         if value.match(/http/)
-                                                                                                                                                                                m 'a.value.task-tag-value-'+base64encode(value),{"title": value, href: value}, short_value(value)
+                                                                                                                                                                                m 'a.value.task-tag-value-'+base64encode(value),{"title": value, href: value}, value
                                                                                                                                                                         else
-                                                                                                                                                                                m '.value.task-tag-value-'+base64encode(value),{"title": value},short_value(value)
+                                                                                                                                                                                m '.value.task-tag-value-'+base64encode(value),{"title": value}, value
                                                                                                                                                         ]
                                                                                                         if router.state.task_unfolded == task.id.toString()
                                                                                                                 m 'tr', key: task.id+'_description',

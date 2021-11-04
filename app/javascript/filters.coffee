@@ -10,8 +10,16 @@ window.Filters =
                         m 'ul#filters.list-unstyled',
                                 if execution_filters? and execution_filters.initialized
                                         grouped_tags = _.groupBy execution_filters.object.tags, (obj) -> obj.substring(0,obj.indexOf(':'))
-                                        #arrayed_tags = _.map(grouped_tags, function(v,k) { var obj={}; obj[k]=v; return obj; })
-                                        for key,value of grouped_tags
+                                        arrayed_tags = _.sortBy(_.map(grouped_tags, (v, k) ->
+                                                obj = {}
+                                                obj[k] = v
+                                                obj
+                                                ), (z) ->
+                                                        Object.values(z)[0].length
+                                                ).reverse()
+                                        for k of arrayed_tags
+                                                key = Object.keys(arrayed_tags[k])[0] #TODO: remove once project moves off coffeescript
+                                                value = Object.values(arrayed_tags[k])[0]
                                                 m 'li',
                                                         m 'hr',style: {margin: '3px'}
                                                         m 'span.filter-parent',key,

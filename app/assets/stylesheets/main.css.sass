@@ -100,6 +100,7 @@ body
         margin: 0.1em
         display: inline-flex
         vertical-align: middle
+        font-size: 0.9em
 
 .tasks-filter-attribute
         width: 1%
@@ -162,6 +163,7 @@ body
         margin-bottom: 0px
         border: 1px solid rgba(0, 0, 0, 1)
         border-radius: 0px
+
         .task_status_accepted, .task_status_transition, .task_status_started
                 animation: progress-bar-stripes 2s linear infinite
 
@@ -180,7 +182,7 @@ body
 .filter-parent
         text-transform: capitalize
         font-size: 0.9em
-        font-weight: boldfilter-header
+        font-weight: bold
 
 .filter-header
         font-variant: small-caps
@@ -244,14 +246,12 @@ body
   font-family: "monospace"
   font-size: 12px
   border: 2px solid black
-  border-radius: 5px
   padding: 1em
   color: black
 
 .resource-box
   position: relative
   border: 1px solid black
-  border-radius: 3px
   background-color: #EEEEEE
   padding: 0.1em
   margin: 0.4em
@@ -350,7 +350,6 @@ td.workers-table
   text-overflow: ellipsis
   background: hsl(49.09, 72.69%, 55.49%)
   text-align: center
-  border-radius: 10%
   color: white
 
 .resource-right
@@ -364,18 +363,6 @@ td.workers-table
   height: 100%
   width: 100%
   object-fit: contain
-
-.raspberry
-  border-radius: 10%
-  background: pink
-
-.banana
-  border-radius: 10%
-  background: yellow
-
-.windows
-  border-radius: 10%
-  background: lightblue
 
 th.workers-table
   text-align: left
@@ -417,6 +404,7 @@ a
 
 .filter-search-input-container-grid
   grid-area: filter-search-input-grid
+  margin-bottom: 5px
 
 .executions-container
   display: grid
@@ -516,11 +504,14 @@ a
 .execution-header-grid-container
   display: grid
   grid-template-columns: fit-content(100%)
-  grid-template-rows: 0.1fr 0.1fr 0.1fr 0.1fr 1fr
+  grid-template-rows: 0.1fr 0.1fr 0.1fr 1fr 1fr
   gap: 10px 5px
   grid-auto-flow: row
-  grid-template-areas: "execution-id-grid execution-status-grid execution-runtime-grid" "execution-tags-grid execution-tags-grid execution-tags-grid" "execution-hooks-grid execution-hooks-grid execution-artifacts-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid"
+  grid-template-areas: "execution-id-grid execution-status-grid execution-runtime-grid execution-actions-grid" "execution-tags-grid execution-tags-grid execution-tags-grid execution-tags-grid" "execution-hooks-grid execution-hooks-grid execution-artifacts-grid execution-artifacts-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid execution-timeline-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid execution-timeline-grid"
   grid-area: execution-header-grid-container
+
+.execution-actions-grid
+  grid-area: execution-actions-grid
 
 .execution-id-grid
   grid-area: execution-id-grid
@@ -597,3 +588,19 @@ code
 
 .executions-table-header
   text-align: center
+
+.tasks-column
+  margin-top: 3px
+
+pre
+  display: block
+  padding: 9.5px
+  margin: 0 0 10px
+  font-size: 13px
+  line-height: 1.42857143
+  color: #333
+  white-space: pre-wrap
+  word-wrap: break-word
+  background-color: #f5f5f5
+  border: 1px solid #ccc
+  border-radius: 4px
