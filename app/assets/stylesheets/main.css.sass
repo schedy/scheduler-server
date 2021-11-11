@@ -451,7 +451,7 @@ a
 .worker-control-container
   display: grid
   grid-template-columns: minmax(200px, 1.0fr) minmax(200px, 1fr)
-  grid-template-rows: minmax(50px, 0.15fr) 1.6fr 0.4fr
+  grid-template-rows: minmax(50px, 0.1fr) 1.6fr 0.4fr
   gap: 0.5em 0.5em
   grid-template-areas: "header actions" "description picture" "status logs"
   grid-row-gap: 1px
@@ -460,16 +460,25 @@ a
 .resources-grid
   grid-area: resources
 
-
 .logs-grid
   grid-area: logs
 
+
 .description-grid
   display: grid
+  grid-template-rows: 25px minmax(200px,0.9fr)
   grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr)
   gap: 0.5em 0.5em
-  grid-template-areas: "descriptionjson resourcebox"
+  grid-template-areas: "header header" "descriptionjson resourcebox"
   grid-area: description
+
+.resource-info-header
+  grid-area: header
+  text-align: center
+
+.resource-picture-header
+  grid-area: header
+  text-align: center
 
 .description-worker-grid
   grid-area: description
@@ -490,7 +499,6 @@ a
 .picture-grid
   grid-area: picture
   text-align: center
-  margin: 20px
 
 .resource-control-header
   grid-area: header
@@ -521,6 +529,7 @@ a
   position: relative
   transition: transform 0.6s
   transform-style: preserve-3d
+  vertical-align: text-top
 
 .schedy-logo:hover
   transition: 0.9s
@@ -633,21 +642,6 @@ code
   white-space: pre
   text-align: left
 
-code2
-  background-color: #eee
-  padding: 3px 5px
-  display: inline-block
-  font-size: 12px
-  display: block
-  overflow: auto
-  color: #515151
-  padding: 20px
-  border-radius: 3px
-  border: 1px solid #e5e5e5
-  white-space: pre
-  text-align: left
-  margin: 20px
-
 .executions-table-header
   text-align: center
 
@@ -666,3 +660,4 @@ pre
   background-color: #f5f5f5
   border: 1px solid #ccc
   border-radius: 4px
+

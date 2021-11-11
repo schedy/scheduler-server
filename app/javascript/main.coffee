@@ -6,10 +6,9 @@ $(document).ready () =>
                 action = $(this).data('action')
                 execution_id = $(this).data('execution-id')
                 options = $(this).data('options')
-
                 endpoint = '/executions/'+execution_id+'/'+action
                 $.post(endpoint, {options: options});
-                $(this).closest(".dropdown-menu").prev().dropdown("toggle");
+                #$(this).closest(".dropdown-menu").prev().dropdown("toggle");
 
         $(document).on "keyup",".filter-input", ->
                 search_word = $(this).val()
@@ -23,7 +22,7 @@ $(document).ready () =>
 
         $(window).on("resize",()->m.redraw())
 
-        window.seapig_client = new SeapigClient('ws://localhost/seapig', name: 'web', debug: false)
+        window.seapig_client = new SeapigClient('ws://'+window.location.host+'/seapig', name: 'web', debug: false)
 
         window.router = new SeapigRouter(window.seapig_client, debug: false)
         window.router.onsessionopen = -> (router.onchange(router.state, router.state) if router.state_valid)
@@ -65,7 +64,7 @@ $(document).ready () =>
                                 window.execution_tasks = window.subscribe(window.execution_tasks, null)
 
                 window.execution = window.subscribe(window.execution, if state.show == "execution" then 'execution:'+state.execution_id else null)
-                window.resource = window.subscribe(window.resource, if state.show == "resourcecontrol" then 'resource:'+state.resource_id else null)
+                window.resource = window.subscribe(window.resource, if state.show == "resourcecontrol" then 'resource:'+state.resource_id+'&worker:'+state.worker_id else null)
                 window.execution_task_details = window.subscribe(window.execution_task_details, if state.show_task_details? then 'execution-timeline:'+state.execution_id else null)
                 window.workers = window.subscribe(window.workers, if state.show == "workers" or state.show == "worker" then 'workers' else null)
                 window.task = window.subscribe(window.task, if state.task_unfolded? then 'task-'+state.task_unfolded else null)
