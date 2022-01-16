@@ -1,6 +1,6 @@
 services:
   schedy-nginx:
-    image: schedy/schedy-nginx
+    image: localhost/schedy-nginx
     build:
       context: ../
       dockerfile: ./compose/nginx/Dockerfile
@@ -12,7 +12,7 @@ services:
         condition: service_completed_successfully
 
   database:
-    image: schedy/schedy-postgres
+    image: localhost/schedy-postgres
     build:
       context: ../
       dockerfile: ./compose/postgres/Dockerfile
@@ -21,7 +21,7 @@ services:
       - "5432:5432"
 
   seapig-server:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     container_name: schedy-seapig-server
     build:
       context: ../
@@ -34,7 +34,7 @@ services:
         condition: service_completed_successfully
 
   seapig-worker:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -43,7 +43,7 @@ services:
     command: seapig-worker
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 12
     depends_on:
       database:
         condition: service_completed_successfully
@@ -52,7 +52,7 @@ services:
       SECRET_KEY_BASE: a86416f38d79d6c8d8c58d030f9df72a418cb7574f3c6f5b15a7a0140fc0e41aee8a38a907fdacc59a57f3d03c028addd16d1e0b206aabae83c6d25a89177502
 
   schedy-router:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -63,7 +63,7 @@ services:
         condition: service_completed_successfully
 
   schedy-status-saver:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -74,7 +74,7 @@ services:
         condition: service_completed_successfully
 
   seapig-notifier:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -85,7 +85,7 @@ services:
         condition: service_completed_successfully
 
   schedy-dealer:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
@@ -96,14 +96,14 @@ services:
         condition: service_completed_successfully
 
   rails:
-    image: schedy/schedy-server-devel
+    image: localhost/schedy-server-devel
     build:
       context: ../
       dockerfile: ./compose/server/Dockerfile
     container_name: schedy-server-rails
     environment:
       RAILS_ENV: production
-      SECRET_KEY_BASE: a86416f38d79d6c8d8c58d030f9df72a418cb7574f3c6f5b15a7a0140fc0e41aee8a38a907fdacc59a57f3d03c028addd16d1e0b206aabae83c6d25a89177502
+      SECRET_KEY_BASE: 34df6aa6edcd1868327cd44f94ea4d57f98683a2a1edc6669ddd8c1f15e9e44b0807ae6ab30a903798bcb67b19a04af643a6d43219be78b001024f12108aaf23
     command: rails server -p 3100
     ports:
       - "3100:3100"
@@ -112,14 +112,14 @@ services:
         condition: service_completed_successfully
 
   webssh:
-    image: schedy/schedy-webssh-server
+    image: localhost/schedy-webssh-server
     build:
       context: ../
       dockerfile: ./compose/util/webssh.Dockerfile
     container_name: schedy-webssh-server
     command : /usr/local/bin/node index.js
     ports:
-      - "2222:2222"
+      - "2222:7777"
     depends_on:
       database:
         condition: service_completed_successfully

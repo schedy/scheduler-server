@@ -8,7 +8,7 @@ RUN mkdir ./project
 
 
 FROM base AS build
-RUN dnf -y install '@C Development Tools and Libraries' ruby-devel redhat-rpm-config postgresql-devel zlib-devel patch yarnpkg  openssh-clients
+RUN dnf -y install '@C Development Tools and Libraries' ruby-devel redhat-rpm-config postgresql-devel zlib-devel patch yarnpkg  openssh-clients hostname
 COPY Gemfile Gemfile.lock  ./
 RUN gem install bundler:1.13.7
 RUN bundle config --local set path vendor/bundle
