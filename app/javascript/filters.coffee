@@ -9,6 +9,7 @@ window.Filters =
                                         m 'label',{"for":'filterSearch'},'Filter by ID or tags'
                         m 'ul#filters.list-unstyled',
                                 if execution_filters? and execution_filters.initialized
+                                        ## TODO: Rework this lambda, replace _map with entries.
                                         grouped_tags = _.groupBy execution_filters.object.tags, (obj) -> obj.substring(0,obj.indexOf(':'))
                                         arrayed_tags = _.sortBy(_.map(grouped_tags, (v, k) ->
                                                 obj = {}
