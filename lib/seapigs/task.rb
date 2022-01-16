@@ -1,9 +1,7 @@
 require './config/environment.rb'
 
 class TaskSingle < Producer
-
-	@patterns = [ 'task-*' ]
-
+	@patterns = ['task-*']
 
 	def self.produce(seapig_object_id)
 		seapig_object_id =~ /task-(\d+)/
@@ -13,7 +11,7 @@ class TaskSingle < Producer
 		data = {
 			id: task.id,
 			description: task.description,
-			artifacts: task.artifacts.group_by { |artifact| artifact.name }.map { |name, artifact_versions|
+			artifacts: task.artifacts.group_by { |artifact| artifact.name }.map { |_name, artifact_versions|
 				artifact = artifact_versions.sort_by { |artifact| artifact.created_at }[-1]
 				{
 					id: artifact.id,
@@ -30,5 +28,4 @@ class TaskSingle < Producer
 	rescue ActiveRecord::RecordNotFound
 		[{}, version]
 	end
-
 end

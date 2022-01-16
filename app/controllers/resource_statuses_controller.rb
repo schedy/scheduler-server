@@ -1,5 +1,4 @@
 class ResourceStatusesController < ApplicationController
-
 	skip_before_action  :verify_authenticity_token, only: :create
 
 	def create
@@ -8,12 +7,11 @@ class ResourceStatusesController < ApplicationController
 			resource_statuses.each { |worker_name, resources|
 				worker = Worker.find_or_create_by(name: worker_name)
 
-
 				(resources or []).each { |description|
 
 				#resources.each { |description|
 					worker.with_lock {
-						resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: description["id"])
+						resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: description['id'])
 						resource_status = ResourceStatus.new
 						resource_status.task_id = description[:task_id]
 						resource_status.role = description[:role]
@@ -29,5 +27,4 @@ class ResourceStatusesController < ApplicationController
 			render json: resource_statuses.to_json
 		}
 	end
-
 end

@@ -1,8 +1,9 @@
 html
         overflow-y: scroll
-
 td
         vertical-align: middle
+body
+        line-height: 1.42857143
 
 .task_marker
         width: 10px
@@ -14,7 +15,6 @@ td
         transition: background-color 2s ease
         border: 0px solid black
         box-shadow: 1px 0 0 0 #000, 0 1px 0 0 #000, 1px 1px 0 0 #000, 1px 0 0 0 #000 inset, 0 1px 0 0 #000 inset
-
 
 .task_status_waiting
         background-color: rgba(160, 160, 160, 1)
@@ -65,24 +65,12 @@ td
         background-image: linear-gradient(90deg, rgba(255, 255, 255, 0), white)
 
 
-.id-column, .status-column, .worker-column, .date-column
-        width: 0px
-
 .task_marker
         &.task_status_accepted, &.task_status_transition, &.task_status_started
                 animation: background-pulsate 2s infinite steps(10)
 
-
-table
-        .id-column
-                width: 50px
-        .status-column
-                width: 80px
-        .date-column
-                width: 200px
-
 #filters
-        white-space: nowrap
+        font-size: smaller
 
 .filter-selected
         font-weight: bold
@@ -112,6 +100,7 @@ table
         margin: 0.1em
         display: inline-flex
         vertical-align: middle
+        font-size: 0.9em
 
 .tasks-filter-attribute
         width: 1%
@@ -174,6 +163,7 @@ table
         margin-bottom: 0px
         border: 1px solid rgba(0, 0, 0, 1)
         border-radius: 0px
+
         .task_status_accepted, .task_status_transition, .task_status_started
                 animation: progress-bar-stripes 2s linear infinite
 
@@ -198,6 +188,9 @@ table
         font-variant: small-caps
         font-weight: bold
         font-size: 1.1em
+        text-align: center
+        grid-area: filter-header-grid
+
 
 .input-group input.filter-search-input
         margin-top: 7px
@@ -224,18 +217,447 @@ table
                 stroke-width: 1px
 
 #timeline-tooltip
-        width: 160px
-        height: 55px
+        width: 420px
         background-color: rgba(255,255,200,1)
         padding: 5px
         border: 1px black solid
         display: none
-
-.worker-dead
-        background-color: red
+        font-size: smaller
+        overflow-wrap: break-word
 
 .dygraph-ylabel
         font-weight: bold
 
 .dygraph-xlabel
         font-weight: bold
+
+.worker-dead
+        background-color: salmon
+.worker-alive
+        background-color: #7fc97f
+
+.workers-column
+  text-align: center
+
+.resources-column
+  text-align: center
+
+.worker-box
+  font-family: "monospace"
+  font-size: 12px
+  border: 2px solid black
+  padding: 1em
+  color: black
+
+.resource-box
+  position: relative
+  border: 1px solid black
+  background-color: #EEEEEE
+  padding: 0.1em
+  margin: 0.4em
+
+.worker-action
+  border: 2px solid black
+  border-radius: 5px
+  float: right
+
+.worker-name
+  color: blue
+  cursor: pointer
+  &:hover
+    color: red
+
+.worker-status
+  color: blue
+  cursor: pointer
+  &:hover
+    color: red
+
+thead.workers-table
+  display: contents
+tbody.workers-table
+  display: contents
+tr.workers-table
+  display: contents
+table.workers-table
+  display: grid
+  grid-template-columns: minmax(150px, 1fr) minmax(150px, 6fr)
+
+.resource-column-wrapper
+  display: grid
+  grid-template-columns: repeat(auto-fill, 180px)
+  grid-auto-flow: row
+  grid-gap: 5px 5px
+
+td.workers-table
+  padding-top: 10px
+  padding-bottom: 10px
+
+th.workers-table,
+td.workers-table
+  padding: 15px
+
+.resource-box
+  font-family: "monospace"
+  font-size: 12px
+  display: grid
+  grid-auto-columns: 1fr
+  grid-template-columns: 5fr 1fr
+  grid-template-rows: 1fr 1fr
+  gap: 0px 0px
+  grid-template-areas: "header right" "header right"
+  grid-auto-flow: column
+
+.resource-header
+  display: grid
+  grid-template-columns: 30% 70%
+  grid-template-rows: 0.5fr
+  grid-template-areas: ". ."
+  border-right: 0.8px solid black
+
+.resource-body
+  display: grid
+  grid-template-rows: 1fr
+  grid-template-areas: ". ."
+  border-right: 0.8px solid black
+  border-top: 0.8px solid black
+
+.resource-name
+  color: blue
+  cursor: pointer
+  text-align: right
+  overflow: hidden
+  text-overflow: ellipsis
+  &:hover
+    color: red
+
+.resource-id
+  color: black
+  text-align: left
+  font-weight: bolder
+
+.resource-task_id
+  text-align: right
+  color: blue
+  cursor: pointer
+  overflow: hidden
+  text-overflow: ellipsis
+  &:hover
+    color: red
+
+.resource-state
+  overflow: hidden
+  text-overflow: ellipsis
+  background: hsl(49.09, 72.69%, 55.49%)
+  text-align: center
+  color: white
+
+.resource-right
+  grid-area: right
+  display: flex
+  justify-content: center
+  align-items: center
+
+.resource-icon
+  color: black
+  height: 100%
+  width: 100%
+  object-fit: contain
+
+th.workers-table
+  text-align: left
+  font-weight: normal
+  font-size: 1.1rem
+  color: black
+td.workers-table
+  padding-top: 10px
+  padding-bottom: 10px
+
+tr:nth-child(odd) td
+  background: #f3f9f7a6
+
+hr
+  color: black
+  text-align: center
+  margin: 0px
+
+.row
+  --bs-gutter-y: 0
+  --bs-gutter-x: 0
+
+a
+  text-decoration: none
+
+.extra-filters-container
+  padding: 10px
+
+.container-filter-header
+  display: grid
+  grid-auto-columns: 1fr
+  grid-template-columns: 1fr 1fr
+  grid-template-rows: 1fr
+  gap: 5px 5px
+  grid-template-areas: "filter-header-grid extra-filter-grid" "filter-search-input-grid filter-search-input-grid"
+
+.extra-filter
+  grid-area: extra-filter-grid
+
+.filter-search-input-container-grid
+  grid-area: filter-search-input-grid
+  margin-bottom: 5px
+
+.executions-container
+  display: grid
+  grid-template-columns: 250px 1.6fr
+  grid-template-rows: 1fr
+  grid-auto-columns: 1fr
+  gap: 0px 10px
+  grid-auto-flow: row
+  grid-template-areas: "filter executions"
+  padding-top: 10px
+
+.filters-grid
+  grid-area: filter
+  margin-top: 10px
+
+.executions-grid
+  grid-area: executions
+
+.layout-container
+  margin-top: 1em
+
+.executions-table-grid
+  display: grid
+  border-collapse: collapse
+  min-width: 100%
+  grid-template-columns: minmax(100px, 0.1fr) minmax(80px, 0.1fr) minmax(50px, 0.5fr) minmax(150px, 3fr) minmax(150px, 3.33fr) minmax(50px, 0.5fr)
+  thead, tbody, tr
+    display: contents
+
+.resource-row-wrapper
+  display: grid
+  grid-template-colums: 180px
+  grid-auto-flow: column
+  grid-gap: 5px 5px
+
+.resource-control-container
+  display: grid
+  grid-template-columns: minmax(200px, 1.0fr) minmax(200px, 1fr)
+  grid-template-rows: minmax(50px, 0.2fr) 1.6fr 0.4fr
+  gap: 0.5em 0.5em
+  grid-template-areas: "header actions" "description picture" "status logs"
+  grid-row-gap: 1px
+
+.worker-control-container
+  display: grid
+  grid-template-columns: minmax(200px, 1.0fr) minmax(200px, 1fr)
+  grid-template-rows: minmax(50px, 0.1fr) 1.6fr 0.4fr
+  gap: 0.5em 0.5em
+  grid-template-areas: "header actions" "description picture" "status logs"
+  grid-row-gap: 1px
+
+
+.resources-grid
+  grid-area: resources
+
+.logs-grid
+  grid-area: logs
+
+
+.description-grid
+  display: grid
+  grid-template-rows: 25px minmax(200px,0.9fr)
+  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr)
+  gap: 0.5em 0.5em
+  grid-template-areas: "header header" "descriptionjson resourcebox"
+  grid-area: description
+
+.resource-info-header
+  grid-area: header
+  text-align: center
+
+.resource-picture-header
+  grid-area: header
+  text-align: center
+
+.description-worker-grid
+  grid-area: description
+
+.descriptionjson-grid
+  grid-area: descriptionjson
+
+.mounts-grid
+  grid-area: mounts
+
+.status-grid
+  grid-area: status
+
+.resourcebox-grid
+  grid-area: resourcebox
+  grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr)
+
+.picture-grid
+  grid-area: picture
+  text-align: center
+
+.resource-control-header
+  grid-area: header
+
+.worker-control-header
+  grid-area: header
+
+.actions-grid-container
+  display: grid
+  grid-template-columns: 1fr 1fr 1fr 1fr
+  grid-template-rows: 1fr
+  gap: 0px 0px
+  grid-template-areas: ". .  .  .  ."
+  grid-area: actions
+  align-items: center
+  text-align: center
+
+.btn-group-xs > .btn, .btn-xs
+  padding: .25rem .4rem
+  font-size: .875rem
+  line-height: 1
+  border-radius: .2rem
+
+.terminal-access-button
+  font-size: .6rem
+
+.schedy-logo
+  position: relative
+  transition: transform 0.6s
+  transform-style: preserve-3d
+  vertical-align: text-top
+
+.schedy-logo:hover
+  transition: 0.9s
+  transform: rotateY(180deg)
+
+.schedy-spinner
+  position: relative
+  animation: rotateY 2s both infinite
+  margin-top: 50px
+
+.spinner-container
+  display: flex !important
+  flex-direction: column
+  justify-content: center
+  max-width: max-content
+
+.execution-grid-container
+  display: grid
+  grid-template-columns: 95%
+  grid-template-rows: max-content
+  gap: 5px 5px
+  grid-auto-flow: row
+  grid-template-areas: "execution-header-grid-container execution-header-grid-container execution-header-grid-container" "execution-tasks-grid-container execution-tasks-grid-container execution-tasks-grid-container" "execution-tasks-grid-container execution-tasks-grid-container execution-tasks-grid-container"
+
+.execution-header-grid-container
+  display: grid
+  grid-template-columns: fit-content(100%)
+  grid-template-rows: 0.1fr 0.1fr 0.1fr 1fr 1fr
+  gap: 10px 5px
+  grid-auto-flow: row
+  grid-template-areas: "execution-id-grid execution-status-grid   execution-runtime-grid" "execution-tags-grid execution-tags-grid execution-button-grid" "execution-hooks-grid execution-hooks-grid execution-artifacts-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid" "execution-timeline-grid execution-timeline-grid execution-timeline-grid"
+  grid-area: execution-header-grid-container
+
+.execution-actions-grid
+  grid-area: execution-actions-grid
+
+.execution-buttons-grid
+  gird-area: execution-button-grid
+
+.execution-id-grid
+  grid-area: execution-id-grid
+
+.execution-status-grid
+  grid-area: execution-status-grid
+
+.execution-runtime-grid
+  grid-area: execution-runtime-grid
+
+.execution-tags-grid
+  grid-area: execution-tags-grid
+
+.execution-hooks-grid
+  grid-area: execution-hooks-grid
+
+.execution-artifacts-grid
+  grid-area: execution-artifacts-grid
+
+.execution-timeline-grid
+  grid-area: execution-timeline-grid
+
+.execution-tasks-grid-container
+  grid-area: execution-tasks-grid-container
+
+.container.spinner-container
+  animation: fade-in 3s
+
+.exit
+  animation: fade-out 3s
+
+@keyframes fade-in
+  from
+    opacity: 0
+  to
+    opacity: 1
+
+@keyframes fade-out
+  from
+    opacity: 1
+  to
+    opacity: 0
+
+@keyframes rotateY
+  0%
+    transform: rotateY(0deg)
+  50%
+    transform: rotateY(180deg)
+  100%
+    transform: rotateY(0deg)
+
+.worker-grid-container
+  display: grid
+  grid-template-columns: 1fr
+  grid-template-rows: 0.5fr 2fr 0.05fr
+  gap: 0px 0px
+  grid-template-areas: "worker-name-grid" "worker-last-update-grid" "worker-action-grid"
+  grid-auto-flow: column
+
+code
+  background-color: #eee
+  padding: 3px 5px
+  display: inline-block
+  font-size: 12px
+  display: block
+  overflow: auto
+  color: #515151
+  padding: 20px
+  margin-top: 20px
+  border-radius: 3px
+  border: 1px solid #e5e5e5
+  white-space: pre
+  text-align: left
+
+.executions-table-header
+  text-align: center
+
+.tasks-column
+  margin-top: 3px
+
+pre
+  display: block
+  padding: 9.5px
+  margin: 0 0 10px
+  font-size: 13px
+  line-height: 1.42857143
+  color: #333
+  white-space: pre-wrap
+  word-wrap: break-word
+  background-color: #f5f5f5
+  border: 1px solid #ccc
+  border-radius: 4px
+

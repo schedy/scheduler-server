@@ -1,12 +1,11 @@
 class ResourceController < ApplicationController
-
 	skip_before_action  :verify_authenticity_token, only: :index
 
 	def index
 		Resource.all
 		ResourceStatus.transaction {
 			resource_statuses = params[:statuses]
-			resource_statuses.each { |worker_name,resources|
+			resource_statuses.each { |worker_name, resources|
 				worker = Worker.find_or_create_by(name: worker_name)
 				resources.each { |resource_id, description|
 					resource = Resource.find_or_create_by(worker_id: worker.id, remote_id: resource_id)
@@ -22,5 +21,4 @@ class ResourceController < ApplicationController
 			render json: resource_statuses.to_json
 		}
 	end
-
 end

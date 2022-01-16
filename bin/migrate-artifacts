@@ -6,7 +6,7 @@ if ARGV.size != 4
 	puts("Usage:\n\tmigrate-artifacts  CURRENT_STORAGE  NEW_STORAGE  NEW_STORAGE_DATA  CUTOFF_DATE") || exit(1)
 end
 
-conditions = (ARGV[0].size == 0 ? "storage_handler IS NULL" : "storage_handler = '%s'"%ARGV[0]) + " AND  created_at < '%s'"%ARGV[3]
+conditions = (ARGV[0].size == 0 ? 'storage_handler IS NULL' : "storage_handler = '%s'"%ARGV[0]) + " AND  created_at < '%s'"%ARGV[3]
 new_storage_handler = ARGV[1]
 new_storage_handler_data = (ARGV[2].size == 0 ? nil : JSON.parse(ARGV[2]))
 storage_handler = ArtifactStore.store(ARGV[1])
@@ -15,14 +15,14 @@ to_process = Artifact.where(conditions).count
 number_length = Math.log10(to_process).floor+1
 
 i = 0
-nil while Artifact.transaction { Artifact.where(conditions).select(:id, :created_at).lock("FOR UPDATE SKIP LOCKED").order("created_at DESC").limit(100).map { |artifact_id|
+nil while Artifact.transaction { Artifact.where(conditions).select(:id, :created_at).lock('FOR UPDATE SKIP LOCKED').order('created_at DESC').limit(100).map { |artifact_id|
 	i += 1
-	puts "#{artifact_id.id} %#{number_length}i/%#{number_length}i  %s"%[i+1, to_process, artifact_id.created_at.strftime("%Y-%m-%d %H:%M:%S")]
+	puts "#{artifact_id.id} %#{number_length}i/%#{number_length}i  %s"%[i+1, to_process, artifact_id.created_at.strftime('%Y-%m-%d %H:%M:%S')]
 	Artifact.transaction {
 		artifact = Artifact.find(artifact_id.id)
 		artifact.storage_handler = new_storage_handler
 		artifact.storage_handler_data = new_storage_handler_data
-		storage_handler.put(artifact, artifact.attributes["data"])
+		storage_handler.put(artifact, artifact.attributes['data'])
 		artifact.save!
 	}
 	nil

@@ -1,0 +1,3 @@
+[submodule "lib/webssh"]
+	path = lib/webssh
+	url = https://github.com/billchurch/WebSSH2

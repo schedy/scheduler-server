@@ -1,10 +1,9 @@
 require './config/environment.rb'
 
 class TaskToEstimate < Producer
+	@patterns = ['tasks-to-estimate']
 
-	@patterns = [ 'tasks-to-estimate' ]
-
-	def self.produce(seapig_object_id)
+	def self.produce(_seapig_object_id)
 
 		#ActiveRecord::Base.logger = Logger.new(STDERR)
 		Task.uncached {
@@ -18,11 +17,10 @@ class TaskToEstimate < Producer
 					) as x;"
 				)[0].summary
 			
-			Task.connection.execute("DROP TABLE pg_planner_go_home_you_re_drunk")
+			Task.connection.execute('DROP TABLE pg_planner_go_home_you_re_drunk')
 			[data, version]
 		}
 	end
-
 end
 
 #					"with tids as

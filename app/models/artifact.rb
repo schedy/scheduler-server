@@ -1,5 +1,4 @@
 class Artifact < ActiveRecord::Base
-
 	belongs_to :task, optional: true
 	belongs_to :execution, optional: true
 	belongs_to :hook_run, optional: true
@@ -23,12 +22,11 @@ class Artifact < ActiveRecord::Base
 		artifact
 	end
 
-
 	def send_data(context, path)
 		if (not path) or path.count('/') == 0
 			context.send_data self.data, type: mimetype, disposition: 'inline'
 		else
-			handle, subpath = path.split('/',2)
+			handle, subpath = path.split('/', 2)
 			ArtifactView.view(handle, self, subpath, context)
 		end
 	end
@@ -41,5 +39,4 @@ class Artifact < ActiveRecord::Base
 		return false if not self.storage_handler
 		ArtifactStore.store(self.storage_handler).respond_to?(:get)
 	end
-
 end

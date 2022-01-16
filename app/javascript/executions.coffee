@@ -34,23 +34,21 @@ window.ExecutionStatusBar =
 window.Executions =
         view: (vnode)->
                 m '#executions.container-fluid', style: { position: 'relative' },
-                        m 'table.table.table-striped.table-condensed',
-                                m 'thead',
+                        m 'table.table.executions-table-grid',
+                                m 'thead.executions-table-header',
                                         m 'tr',
                                                 m 'th.id-column', 'ID'
-                                                m 'th.creator-column', 'Creator'
                                                 m 'th.status-column', 'Status'
                                                 m 'th.created-at-column',m.trust('Created&nbsp;at')
                                                 m 'th.tasks-column', 'Tasks'
                                                 m 'th.tags-column.text-center', 'Tags'
                                                 m 'th.actions-column.text-center', 'Actions'
-                                m 'tbody',
+                                m 'tbody.executions-table-body',
                                         if executions? and executions.initialized
                                                 for execution in executions.object.executions
                                                         m 'tr', key: execution.id,
                                                                 m 'td.id_column',
                                                                         m 'a[href="?show=execution&execution_id='+execution.id+'"]', execution.id
-                                                                m 'td.creator-column', execution.creator
                                                                 m 'td.status-column', execution.status
                                                                 m 'td.created-at-column', title: new Date(execution.created_at+"Z").toString().substr(0,25), short_date(execution.created_at+"Z")
                                                                 m 'td.tasks-column',
@@ -71,15 +69,17 @@ window.Executions =
                                                                                                         ]
                                                                 m 'td.actions-column.text-center',
                                                                         m '.dropdown',
-                                                                                m 'button.btn.btn-default.btn-sm.dropdown-toggle',{'data-toggle':'dropdown'},
-                                                                                        m '.icon',{'title':'Actions'},'★'
+                                                                                m 'button.btn.btn-outline-dark.btn-sm',{'data-bs-toggle':'dropdown'},
+                                                                                        m 'svg.actions',{'xmlns':'http://www.w3.org/2000/svg', 'width':"16", 'height':"16", 'fill':"currentColor", 'class':"bi bi-list", 'viewBox':"0 0 16 16"},
+                                                                                                 m 'path', {'fill-rule':"evenodd", 'd':"M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"}
+
                                                                                 m 'ul.dropdown-menu.pull-right',
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.retrigger-execution',{'href':'?','data-action':'retrigger','data-execution-id': execution.id},'Retrigger'
+                                                                                                m 'a.dropdown-item.execution-action.retrigger-execution',{'href':'?','data-action':'retrigger','data-execution-id': execution.id},'Retrigger'
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "cancelled" }'},'Cancel'
+                                                                                                m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "cancelled" }'},'Cancel'
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "paused" }'},'Pause'
+                                                                                                m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "waiting", "to": "paused" }'},'Pause'
                                                                                         m 'li',
-                                                                                                m 'a.dropdown-toggle.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "paused", "to": "waiting" }'},'Resume'
+                                                                                                m 'a.dropdown-item.execution-action.force-status-execution',{'href':'?','data-action':'status','data-execution-id': execution.id,'data-options':'{ "from": "paused", "to": "waiting" }'},'Resume'
                         m Spinner if (not executions?) or (not executions.valid)

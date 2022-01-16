@@ -1,0 +1,17 @@
+name: Image Builds
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Docker login
+      run: podman login -u schedy -p ${{ secrets.DOCKERHUB }}    
+    - name: Install compose
+      run: pip3 install podman-compose
+    - name: Build the compose stack
+      run: podman-compose -f compose/container-compose.yml build
+    - name: Push the compose stack
+      run: podman-compose -f compose/container-compose.yml push

@@ -1,10 +1,9 @@
 require './config/environment.rb'
 
 class TaskToDeal < Producer
+	@patterns = ['tasks-to-deal']
 
-	@patterns = [ 'tasks-to-deal' ]
-
-	def self.produce(seapig_object_id)
+	def self.produce(_seapig_object_id)
 
 		#ActiveRecord::Base.logger = Logger.new(STDERR)
 		Task.uncached {
@@ -22,9 +21,8 @@ class TaskToDeal < Producer
 					) as x;"
 				)[0].summary or {})
 			}
-			Task.connection.execute("DROP TABLE pg_planner_go_home_you_re_drunk")
+			Task.connection.execute('DROP TABLE pg_planner_go_home_you_re_drunk')
 			[data, version]
 		}
 	end
-
 end
