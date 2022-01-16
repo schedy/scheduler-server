@@ -36,7 +36,7 @@ class TaskStatusesController < ApplicationController
 
 		#INFO: If request cannot satisfy constraint matrix, return 423 - Locked.
 		if ((not params[:force]) and constraint_matrix.index([old_status, new_status]).nil?) or !constraint_matrix.find { |_old, new| new == new_status }
-			render nothing: true , status: 423
+			render json: {error: "Request cannot satisfy constraint matrix"} , status: 423
 			return
 		end
 

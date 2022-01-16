@@ -9,7 +9,8 @@ class ResourceSingle < Producer
         resource_id = $1.to_i
         worker_id = $2.to_i
         version = SeapigDependency.versions('Resource:%010i'%[resource_id+worker_id])
-        resource = Resource.where(worker_id: worker_id, remote_id: resource_id).first
+        #XXX: if resource existed before, it serves wrong one for now.
+        resource = Resource.where(worker_id: worker_id, remote_id: resource_id).last
         data = {
             id: resource_id,
             worker_id: worker_id,
